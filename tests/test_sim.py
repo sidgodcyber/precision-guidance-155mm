@@ -883,3 +883,104 @@ def test_angle_of_attack_stays_small_in_nominal_flight():
     y0 = dyn.initial_state(pr.M107, pr.LaunchConditions.from_mils(684.0, 141.6))
     res = ig.integrate(y0, model, dt=5e-4, log_every=200, t_max=60.0)
     assert math.degrees(res.max_total_aoa) < 5.0
+
+
+# ===========================================================================
+# THE REDUCED-RATE CONVENTION -- see docs/RATE-CONVENTION.md
+# ===========================================================================
+def test_reduced_rate_factor_is_the_deck_convention():
+    """
+    REDUCED_RATE_FACTOR = 0.5 (pd/(2V)) is not a preference. It is the
+    convention of the ASAT-13 / SPINNER-98 coefficient deck this table
+    carries, determined by reproducing that source's OWN published trajectory
+    (ASAT-13 section 4.3), independently of the firing table.
+
+    The convention belongs to the COEFFICIENTS. If this constant changes
+    without the coefficient table changing, the model is wrong by a factor of
+    two on every rate-dependent term.
+    """
+    assert aerodata.REDUCED_RATE_FACTOR == 0.5
+
+
+def test_one_factor_governs_all_four_rate_coefficients():
+    """
+    All four rate-dependent coefficients come from a single source, so a
+    single factor is the correct treatment for all of them. The failure mode
+    this guards is the bad one: different coefficients in the same table
+    silently needing different normalisation.
+
+    Scaling the four coefficients by k must be EXACTLY equivalent to scaling
+    the reduced rates by k -- which is only true if every rate-dependent term
+    picks up the factor once and nothing else does.
+    """
+    env = pr.Environment.from_degrees(45.0, include_coriolis=False)
+    launch = pr.LaunchConditions.from_mils(684.0, 300.0)
+    y = dyn.initial_state(pr.M107, launch)
+    # give it transverse rates and yaw, so every rate term is live
+    y[10], y[11], y[12] = 1200.0, 0.6, -0.4
+    y[3] += 12.0
+    y[4] += 9.0
+
+    names = aerodata.COEFFICIENT_NAMES
+    rate_names = ("C_Ypalpha", "C_lp", "C_mq", "C_Mpalpha")
+
+    def model_with(scaled_rows):
+        return dyn.FlightModel(
+            projectile=pr.M107,
+            aero=aerodata.AeroTable(scaled_rows, "scaled", "test"),
+            environment=env,
+        )
+
+    base_rows = aerodata.apply_measured_cnalpha(aerodata._M107_ROWS)
+    k = 2.0
+    scaled = base_rows.copy()
+    for n in rate_names:
+        scaled[:, 1 + names.index(n)] *= k
+
+    d_scaled_coeffs = dyn.derivative(0.0, y, model_with(scaled))
+
+    saved = aerodata.REDUCED_RATE_FACTOR
+    try:
+        aerodata.REDUCED_RATE_FACTOR = saved * k
+        dyn.REDUCED_RATE_FACTOR = saved * k
+        d_scaled_rates = dyn.derivative(0.0, y, model_with(base_rows.copy()))
+    finally:
+        aerodata.REDUCED_RATE_FACTOR = saved
+        dyn.REDUCED_RATE_FACTOR = saved
+
+    assert np.allclose(d_scaled_coeffs, d_scaled_rates, rtol=1e-12, atol=0.0)
+
+    # and the two must actually differ from the unscaled derivative, or the
+    # equivalence above would be vacuous
+    d_base = dyn.derivative(0.0, y, model_with(base_rows.copy()))
+    assert not np.allclose(d_base, d_scaled_coeffs, rtol=1e-6)
+
+
+def test_static_coefficients_are_untouched_by_the_rate_convention():
+    """
+    C_X0, C_Nalpha and C_Malpha carry no reduced rate, so they must be
+    completely insensitive to the convention. This is what lets range and
+    time of flight be trusted while the rate terms were still an open
+    question.
+    """
+    env = pr.Environment.from_degrees(45.0, include_coriolis=False)
+    model = dyn.FlightModel(
+        projectile=pr.M107, aero=aerodata.make_m107_table(), environment=env
+    )
+    launch = pr.LaunchConditions.from_mils(684.0, 300.0)
+    y = dyn.initial_state(pr.M107, launch)
+    y[3] += 10.0
+    y[10] = 0.0                     # no spin -> no Magnus, no spin damping
+    y[11] = y[12] = 0.0             # no transverse rates -> no pitch damping
+
+    saved = aerodata.REDUCED_RATE_FACTOR
+    try:
+        d_half = dyn.derivative(0.0, y, model)
+        aerodata.REDUCED_RATE_FACTOR = 1.0
+        dyn.REDUCED_RATE_FACTOR = 1.0
+        d_full = dyn.derivative(0.0, y, model)
+    finally:
+        aerodata.REDUCED_RATE_FACTOR = saved
+        dyn.REDUCED_RATE_FACTOR = saved
+
+    assert np.allclose(d_half, d_full, rtol=1e-14, atol=0.0)

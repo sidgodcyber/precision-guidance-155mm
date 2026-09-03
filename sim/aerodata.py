@@ -184,27 +184,71 @@ CONFIDENCE, AND THE ONE UNRESOLVED CONVENTION RISK
                       does not pin this down better than a factor of two.
   C_Ypalpha LOW       single source. BRL could not extract it from full-scale
                       swerve at all and quotes semiscaled-model values only.
-  C_Mpalpha LOW       sources differ: BRL M107 free flight gives -0.57 at
-                      M 0.79, this table gives -0.36. Both are negative
-                      subsonic and both turn positive supersonically.
+  C_Mpalpha LOW       sources differ by a FACTOR OF 3.1, once both are put
+                      in the same convention. BRL M107 free flight gives
+                      -0.57 at M 0.79 in the pd/V normalisation of its
+                      Appendix I; converting to this package's pd/(2V) means
+                      DOUBLING it, to -1.13, against this table's -0.36.
+                      An earlier note here compared -0.57 with -0.36 and
+                      called the gap 36 % -- that was a comparison across
+                      two conventions and understated it by a factor of two.
+                      The ratio is tight across all three BRL rounds and
+                      BRL's own stated error is 0.18, so it is a real
+                      disagreement, not scatter. The deck is self-consistent
+                      with the ASAT-13 section 4.3 published trajectory
+                      (using BRL's value there gives a peak yaw of 3.89 deg
+                      against a published ~1.3 deg), so the deck is kept;
+                      computed Magnus moments are the least reliable output
+                      of semi-empirical codes and this is where they fail.
+                      Both are negative subsonic and both turn positive
+                      supersonically. See docs/RATE-CONVENTION.md section 5.
 
-  UNRESOLVED CONVENTION RISK -- stated plainly, because it is the one thing
-  in this file that could be a factor-of-two error:
+  THE REDUCED-RATE CONVENTION -- RESOLVED, and how:
 
     The four RATE-DEPENDENT coefficients (C_Ypalpha, C_Mpalpha, C_lp, C_mq)
     are multiplied in dynamics.py by the reduced rates pd/(2V) and qd/(2V),
-    per SIXDOFSPEC.md sections 5-6. That is the PRODAS / aircraft convention.
-    The classical aeroballistic literature (McCoy; BRL MR-1582 Appendix I,
-    quoted above) instead uses pd/V and qd/V, whose coefficients are exactly
-    HALF the value of a pd/(2V)-normalised coefficient describing the same
-    physics.
+    per SIXDOFSPEC.md sections 5-6, through REDUCED_RATE_FACTOR below. The
+    classical aeroballistic literature (McCoy; BRL MR-1582 Appendix I, quoted
+    above) instead uses pd/V and qd/V, whose coefficients are exactly HALF
+    the value of a pd/(2V)-normalised coefficient describing the same
+    physics. A factor of two, and a silent one.
 
-    The Khalil table is a PRODAS-style deck -- it tabulates C_Mpalpha against
-    yaw angle at 0, 2, 5 and 10 degrees, which is a PRODAS output format --
-    so pd/(2V) is the reading adopted here and no factor is applied. This is
-    an ASSUMPTION. Neither source states it in a form this work could verify.
-    run_ballistic.py runs a sensitivity case that doubles all four
-    coefficients; docs/VALIDATION.md records how little range and drift move.
+    This was an assumption until it was tested. It is now DETERMINED, and it
+    was determined WITHOUT reference to the firing table:
+
+      ASAT-13 section 4.3 publishes a trajectory that ASAT computed with
+      THIS deck, and states the peak total angle of attack and the time at
+      which it occurs. Reproducing that published trajectory requires
+      pd/(2V):
+
+                              pd/(2V)     pd/V     ASAT published
+        max total AoA (deg)     1.297     1.233     ~1.3
+        TIME of max AoA (s)     32.36     19.08     ~32
+        yaw history             smooth    17 local maxima
+
+      The peak TIME is the discriminator, not the peak value -- it is a
+      shape feature of the yaw history, not a magnitude a coefficient scale
+      can slide. Converged over dt = 4e-4 to 1e-4.
+
+      Corroboration for C_lp specifically, the only one of the four that
+      moves drift: the Balon and Komenda PRODAS deck converts to
+      C_lp = -0.026 to -0.021 in this package's convention against this
+      table's -0.023 to -0.019. Under pd/V it would have needed -0.046
+      to -0.038.
+
+    All four rate coefficients come from ONE source, so one factor governs
+    all four and no coefficient here needs different treatment from its
+    neighbours. BRL is the exception and is pd/V: any comparison against a
+    BRL rate coefficient must double it first. See the C_Mpalpha entry above
+    for what that correction did to a comparison that had been made without
+    it.
+
+    Full audit, including why the `rate coefficients x2` sensitivity row
+    increases the angle of attack (it is a spin-decay experiment, not a
+    damping experiment, on trajectories that carry no epicyclic motion):
+    docs/RATE-CONVENTION.md. Reproduce with
+    `python -m analysis.rate_convention_audit`.
+
     The static coefficients that set range, stability and drift -- C_X0,
     C_Nalpha and C_Malpha -- carry no such ambiguity.
 
@@ -370,9 +414,13 @@ COEFFICIENT_CONFIDENCE = {
 }
 
 #: Multiplier applied to the reduced rates pd/V and qd/V in dynamics.py.
-#: 0.5 gives the pd/(2V) PRODAS/aircraft convention that SIXDOFSPEC.md
-#: specifies. Setting it to 1.0 switches the entire model to the classical
-#: aeroballistic pd/V normalisation. See the convention risk note above.
+#: 0.5 gives the pd/(2V) normalisation of the ASAT-13 / SPINNER-98 deck this
+#: table carries -- determined empirically by reproducing that source's own
+#: published trajectory, not assumed. Setting it to 1.0 switches the entire
+#: model to the classical aeroballistic pd/V normalisation, which is what a
+#: BRL- or McCoy-sourced coefficient set would need. THE CONVENTION BELONGS
+#: TO THE COEFFICIENTS: change this only when the table changes. See the
+#: block above and docs/RATE-CONVENTION.md.
 REDUCED_RATE_FACTOR = 0.5
 
 

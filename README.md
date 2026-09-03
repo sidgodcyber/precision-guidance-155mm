@@ -227,12 +227,22 @@ Read these before quoting any number from this model.
    measurement directly. `C_Ypα`, `C_Mpα`, `C_mq` and `C_X2` rest on a computed
    deck alone. There are no placeholder coefficients, and the confidence grade
    per coefficient is printed on every run.
-2. **One convention is an assumption, and permanently so from this source set.**
-   The four rate-dependent coefficients are applied with reduced rates pd/(2V)
-   and qd/(2V); the classical aeroballistic literature uses pd/V, whose
-   coefficients are half as large for the same physics. Neither source settles
-   it. Worth < 0.25 % in range but 7–11 % in drift. `REDUCED_RATE_FACTOR` in
-   `aerodata.py` is the one constant expressing the choice.
+2. **The reduced-rate convention is settled, and it was settled without
+   reference to the firing table.** The four rate-dependent coefficients are
+   applied with reduced rates pd/(2V) and qd/(2V); the classical aeroballistic
+   literature uses pd/V, whose coefficients are half as large for the same
+   physics. The deck this model carries is pd/(2V), determined by reproducing
+   ASAT-13 §4.3 — that source's own published trajectory, computed with that
+   deck. Under pd/V the peak angle of attack moves from t = 32.4 s to
+   t = 19.1 s against a published ~32 s, and the yaw history changes from a
+   single broad peak to a sustained oscillation. `REDUCED_RATE_FACTOR` in
+   `aerodata.py` is the one constant expressing the choice, and the choice
+   belongs to the coefficients rather than the equations — replace the table
+   with a BRL- or McCoy-sourced one and it must become 1.0. Reproduce the
+   audit with `python -m analysis.rate_convention_audit`. **What that audit
+   did find** is that BRL's rate coefficients were being compared against the
+   deck *across* conventions: the C_Mpα disagreement between the two sources
+   is a factor of 3.1, not the 36 % previously recorded.
 3. **Drift runs ~14 % high** against the firing table (mean +14.4 % over 15
    points, +5.0 % to +24.8 %, worst where the absolute drift is only a few
    metres). **Unresolved, with no coefficient explanation left.** Every candidate
