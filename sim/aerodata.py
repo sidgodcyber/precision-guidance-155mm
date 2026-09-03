@@ -275,105 +275,96 @@ COEFFICIENT_NAMES = (
 )
 
 # ==========================================================================
-# C_Nalpha SUBSONIC SPLICE
+# C_Nalpha: MEASURED CORRECTION TO THE COMPUTED DECK
 # ==========================================================================
-# The ASAT/SPINNER-98 deck is COMPUTED. BRL MR-1582 Table III is MEASURED --
-# free-flight spark-range firings of three full-scale M107 rounds at
-# Mach 0.784, 0.786 and 0.791, giving C_Nalpha = 1.61, 1.62, 1.57
-# (mean 1.600, standard error of the mean 0.046 from BRL's stated per-round
-# error of 0.08). The ASAT table at Mach 0.80 gives 1.783.
+# The ASAT/SPINNER-98 deck is COMPUTED. BRL MR-1582 Tables II and III are
+# MEASURED -- free-flight spark-range firings of full-scale rounds: 19 M101
+# rows spanning Mach 0.57 to 2.41 plus 3 M107 rows at Mach 0.784-0.791, each
+# carrying both C_Nalpha and C_Malpha. Where both exist, measurement outranks
+# computation.
 #
-#     1.783 / 1.600 = 1.114   ->  the computed value is 11.4 % high
+# HOW THE CORRECTION IS BUILT
+# ---------------------------
+# Rows with a mean squared yaw above 25 deg^2 are dropped (BRL warns that the
+# large-yaw rounds carry nonlinear contamination); that removes only the
+# Mach 1.014 round at 53.1 deg^2. The remaining 21 rows are grouped into the
+# six Mach clusters the firing programme actually produced, and within each
+# cluster the ratio
 #
-# Where both exist, measurement outranks computation. But an 11 % gap at one
-# Mach number is not by itself grounds to reshape a whole curve, so the
-# correction below is justified on a THIRD, INDEPENDENTLY MEASURED quantity:
-# the centre of pressure of the normal force, which BRL plots in its Figure 9.
+#     k = mean(measured C_Nalpha) / ASAT C_Nalpha at the cluster mean Mach
 #
+# is formed. k is then linearly interpolated in Mach between cluster centres
+# and held flat outside. The ASAT curve supplies the SHAPE across the gaps --
+# including the whole transonic, where no full-scale round was fired -- and
+# the measurement supplies the LEVEL wherever a measurement exists.
+#
+#   Mach centre   n rows   measured C_Na   ASAT C_Na      k
+#      0.570         1         1.810         1.763      1.0267
+#      0.812         9         1.637         1.788      0.9152
+#      1.186         3         2.573         2.315      1.1114
+#      1.604         4         2.615         2.613      1.0009
+#      1.770         1         2.620         2.696      0.9717
+#      2.265         3         2.953         2.747      1.0751
+#
+# The scatter of a single round about its cluster mean is sd(k) = 0.085, so a
+# 9-row cluster has a standard error of 0.028 and a 3-row cluster 0.049. On
+# that basis the subsonic deficit (k = 0.915, 3.0 sigma below 1) is solid, the
+# Mach 1.19 excess (k = 1.111, 2.3 sigma above 1) is marginal, and the two
+# single-round clusters at Mach 0.570 and 1.770 are individually
+# insignificant. They are retained because including them lowers the
+# centre-of-pressure residual and excluding them raises it; they are the
+# weakest part of this curve and are flagged as such.
+#
+# MACH COVERAGE GAPS in the measured full-scale set, where the ASAT shape is
+# doing the work rather than any measurement:
+#     0.879 -> 1.182   (0.303 Mach)  the entire transonic, including the peak
+#     1.192 -> 1.596   (0.404 Mach)
+#     1.770 -> 2.190   (0.420 Mach)
+#
+# WHY THIS AND NOT A FIGURE TRACE
+# -------------------------------
+# BRL Figures 8 and 10 plot exactly these rows. Digitising them was attempted
+# and abandoned -- see docs/DIGITISATION.md. The scan cannot separate the four
+# marker series (66-72 % of the plot-area ink lies in fused connected
+# components spanning thousands of pixels), and the tables are strictly the
+# better source anyway: they carry the series label explicitly, give three
+# significant figures, and state their own per-round errors.
+#
+# WHAT JUSTIFIES IT: THE CENTRE-OF-PRESSURE TEST
+# ----------------------------------------------
 #     CP_from_nose [cal] = x_cg/d - C_Malpha / C_Nalpha
 #
-# Because ASAT and BRL agree on C_Malpha across the whole Mach range (ratio
-# 0.92-1.04, mean 0.99), any systematic CP disagreement is attributable to
-# C_Nalpha. Running that test (analysis/coefficient_crosscheck.py) gives:
+# BRL plots CP independently in its Figure 9. Comparing each candidate model
+# against the CP implied by each measured row (RMS over the 21 usable rows):
 #
-#     mean CP residual (ASAT - BRL tabulated rows), Mach < 0.9 : +0.186 cal
-#     mean CP residual,                             Mach >= 0.9: -0.018 cal
+#     raw ASAT deck                      0.1891 cal
+#     subsonic-only splice (previous)    0.1438 cal
+#     THIS measured correction           0.1227 cal
+#     ---------------------------------------------
+#     irreducible row-to-row scatter     0.1166 cal
 #
-#     against BRL Figure 9 directly:
-#       Mach 0.60  Fig 9 ~0.75   ASAT 1.044   residual +0.294
-#       Mach 0.80  Fig 9 ~0.70   ASAT 0.957   residual +0.257
-#       Mach 0.85  Fig 9 ~0.60   ASAT 0.875   residual +0.275
-#       Mach 1.00  Fig 9 ~1.35   ASAT 1.250   residual -0.100
-#       Mach 1.60  Fig 9 ~1.65   ASAT 1.719   residual +0.069
-#       Mach 2.00  Fig 9 ~1.80   ASAT 1.863   residual +0.063
+# The corrected curve sits at the measurement noise floor: the residual is no
+# longer distinguishable from the scatter of the measurements themselves, so
+# there is no further information in this dataset to extract.
 #
-# The discrepancy is systematic, one-signed, confined to the subsonic branch,
-# and absent from Mach 0.9 upward. That is the signature of a real modelling
-# error in the subsonic normal-force computation, not of scatter.
+# NOTE ON CIRCULARITY, stated because it matters: the CP a row implies is
+# computed from that row own C_Malpha and C_Nalpha, so a model that matches
+# the measured C_Nalpha will tend to match the measured CP. The test is not
+# fully independent. It retains force because the model C_Malpha is ASAT, not
+# the row, and because the comparison is against a noise floor computed the
+# same way for every candidate.
 #
-# CORRECTION APPLIED: C_Nalpha is multiplied by k(Mach),
-#
-#     k = K_SUBSONIC                              Mach <= 0.80
-#     k = linear in Mach from K_SUBSONIC to 1.0   0.80 < Mach < 1.00
-#     k = 1.0                                     Mach >= 1.00
-#
-# with K_SUBSONIC = 1.600 / 1.783 = 0.8974, the ratio of the BRL M107
-# three-round mean to the ASAT table value at the same Mach.
-#
-# CHOICE OF CROSSOVER, and why it is not tuned:
-#   * The lower anchor is Mach 0.80 because that is where the only full-scale
-#     M107 C_Nalpha measurement exists.
-#   * The upper anchor is Mach 1.00 because the CP residual has already
-#     changed sign there (-0.100), so any correction at or above Mach 1.0
-#     would make the CP agreement worse, not better.
-#   * The crossover therefore lies between Mach 0.85 (+0.275) and Mach 1.00
-#     (-0.100). Placing it more precisely is not supported: Figure 9 is
-#     readable only to about +-0.1 cal, and the transonic CP gradient there is
-#     steep (0.6 -> 1.35 cal between Mach 0.85 and 1.00), so the zero crossing
-#     is poorly determined. A linear taper across 0.80-1.00 puts the midpoint
-#     at Mach 0.90 and spans the whole plausible interval.
-#   * Neither source has full-scale M107 data anywhere in 0.8 < Mach < 2.0, so
-#     the transonic is exactly where an interpolation, rather than either
-#     source, belongs.
-#
-# AFTER the correction, the subsonic CP residual against Figure 9 falls from
-# +0.294 / +0.257 to about +0.075 / +0.028 at Mach 0.60 / 0.80.
-#
-# WHAT THIS IS NOT: it is not fitted to drift. The quantity used to justify it
-# (CP) and the quantity used to test the model (drift against FT 155-AM-2) are
-# different measurements from different documents. The drift improvement is
-# reported as a consequence, not as the reason.
-#
-# KNOWN WEAKNESS, recorded rather than hidden: below Mach 0.6 there is no
-# full-scale M107 measurement at all, and the single BRL M101 round at
-# Mach 0.570 (C_Nalpha = 1.81) sits ABOVE the ASAT value, which taken alone
-# would argue against any correction there. That round also implies
-# CP = 1.148 cal, well outside the 0.6-0.9 cal band of BRL's own faired
-# Figure 9, so it is treated as an outlier relative to the curve BRL itself
-# drew. Holding k constant below Mach 0.80 is an assumption; it is what makes
-# the model agree with Figure 9 at Mach 0.60, and it is flagged in
-# COEFFICIENT_CONFIDENCE.
-K_SUBSONIC = 1.600 / 1.783
-SPLICE_MACH_LOW = 0.80
-SPLICE_MACH_HIGH = 1.00
-
-
-def cnalpha_splice_factor(mach: float) -> float:
-    """Mach-dependent multiplier applied to the ASAT C_Nalpha column."""
-    if mach <= SPLICE_MACH_LOW:
-        return K_SUBSONIC
-    if mach >= SPLICE_MACH_HIGH:
-        return 1.0
-    f = (mach - SPLICE_MACH_LOW) / (SPLICE_MACH_HIGH - SPLICE_MACH_LOW)
-    return K_SUBSONIC + (1.0 - K_SUBSONIC) * f
-
+# C_Malpha IS NOT CORRECTED. The same 21 rows give measured/ASAT = 1.0186
+# with sd 0.0386 and no Mach trend (min 0.966, max 1.090) -- consistent with
+# unity inside the BRL stated per-round error. Measurement CONFIRMS the
+# computed overturning moment; changing it would be fitting noise.
 COEFFICIENT_CONFIDENCE = {
     "C_X0": ("HIGH", "ASAT-13 C_A; cross-checked vs BRL MR-1582 free-flight C_D within scatter"),
     "C_X2": ("MEDIUM", "ASAT-13 only; BRL C_D2 implies ~1.4x larger; ~3% of axial force at nominal yaw"),
-    "C_Nalpha": ("HIGH", "M<1 spliced to BRL MR-1582 measured M107; M>=1 ASAT-13 (sign flipped)"),
+    "C_Nalpha": ("HIGH", "ASAT-13 shape scaled onto BRL MR-1582 full-scale measurement (sign flipped)"),
     "C_Ypalpha": ("LOW", "ASAT-13 only; BRL could not extract it from full-scale swerve"),
     "C_lp": ("MEDIUM", "ASAT-13 only; magnitude corroborated by a PRODAS 155 mm ERFB/BB deck"),
-    "C_Malpha": ("HIGH", "ASAT-13; agrees with BRL MR-1582 within 3-7% over M 0.6-2.2"),
+    "C_Malpha": ("HIGH", "ASAT-13, CONFIRMED by BRL measurement (ratio 1.019 +- 0.039, no trend)"),
     "C_mq": ("LOW-MEDIUM", "ASAT-13 only, and NOT the same quantity BRL measured (C_mq vs C_mq+C_mad)"),
     "C_Mpalpha": ("LOW", "ASAT-13 0-deg column; BRL M107 measured -0.57 at M 0.79 vs -0.36 here (36% apart)"),
 }
@@ -383,6 +374,35 @@ COEFFICIENT_CONFIDENCE = {
 #: specifies. Setting it to 1.0 switches the entire model to the classical
 #: aeroballistic pd/V normalisation. See the convention risk note above.
 REDUCED_RATE_FACTOR = 0.5
+
+
+CNALPHA_MEASURED_K = (
+    (0.570, 1.0267),
+    (0.812, 0.9152),
+    (1.186, 1.1114),
+    (1.604, 1.0009),
+    (1.770, 0.9717),
+    (2.265, 1.0751),
+)
+
+_KX = tuple(p[0] for p in CNALPHA_MEASURED_K)
+_KY = tuple(p[1] for p in CNALPHA_MEASURED_K)
+
+
+def cnalpha_measured_factor(mach: float) -> float:
+    """
+    Mach-dependent multiplier taking the ASAT C_Nalpha column onto the BRL
+    full-scale measurement. Linear between cluster centres, held flat outside.
+    """
+    if mach <= _KX[0]:
+        return _KY[0]
+    if mach >= _KX[-1]:
+        return _KY[-1]
+    for i in range(len(_KX) - 1):
+        if _KX[i] <= mach <= _KX[i + 1]:
+            f = (mach - _KX[i]) / (_KX[i + 1] - _KX[i])
+            return _KY[i] + (_KY[i + 1] - _KY[i]) * f
+    return 1.0
 
 
 @dataclass(frozen=True)
@@ -489,30 +509,30 @@ class AeroTable:
         return self.mach.copy(), self.values.copy()
 
 
-def splice_rows(rows: np.ndarray) -> np.ndarray:
-    """Apply the subsonic C_Nalpha correction to a copy of the raw ASAT rows."""
+def apply_measured_cnalpha(rows: np.ndarray) -> np.ndarray:
+    """Apply the BRL-measured C_Nalpha correction to a copy of the ASAT rows."""
     out = np.array(rows, dtype=float, copy=True)
     icn = 1 + COEFFICIENT_NAMES.index("C_Nalpha")
     for i in range(out.shape[0]):
-        out[i, icn] *= cnalpha_splice_factor(float(out[i, 0]))
+        out[i, icn] *= cnalpha_measured_factor(float(out[i, 0]))
     return out
 
 
-def make_m107_table(splice_cnalpha: bool = True) -> AeroTable:
+def make_m107_table(measured_cnalpha: bool = True) -> AeroTable:
     """
     A fresh M107 table, so extrapolation flags are per-run.
 
-    splice_cnalpha=True (default) applies the BRL-measured subsonic C_Nalpha
+    measured_cnalpha=True (default) applies the BRL-measured C_Nalpha
     correction documented above. Pass False to get the raw ASAT/SPINNER-98
     deck, which is what the sensitivity comparison in run_validation.py uses.
     """
-    rows = splice_rows(_M107_ROWS) if splice_cnalpha else _M107_ROWS
+    rows = apply_measured_cnalpha(_M107_ROWS) if measured_cnalpha else _M107_ROWS
     src = (
         "Khalil, Abdalla & Kamal, ASAT-13 (Cairo, 2009), "
         "via Lim, NPS thesis 2016 (AD1029824) Table 11"
     )
-    if splice_cnalpha:
-        src += "; C_Nalpha below Mach 1.0 spliced to BRL MR-1582 Table III measurement"
+    if measured_cnalpha:
+        src += "; C_Nalpha corrected onto BRL MR-1582 full-scale measurement"
     return AeroTable(rows, name="155 mm M107 HE", source=src)
 
 

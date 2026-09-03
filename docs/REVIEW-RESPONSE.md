@@ -4,6 +4,13 @@
 
 Reviewing documents: `BRL1582EXTRACT.md`, `ASAT13CROSSCHECK.md`.
 
+> **This document records the FIRST correction pass and its numbers are
+> historical.** A later pass replaced the subsonic-only C_Nα splice described
+> in task 3 with a full measured correction across the whole Mach range, which
+> moved the drift residual from +10.2 % to +14.4 %. The current state of the
+> model is in [STEP1-CLOSEOUT.md](STEP1-CLOSEOUT.md); the reasoning below about
+> *which claims were accepted and rejected* still stands unchanged.
+
 Every claim below was checked against the primary sources before any code was
 touched. Two claims were adopted, three were confirmed as already-correct, and
 **one was rejected** — the twist rate, which was the change that would have

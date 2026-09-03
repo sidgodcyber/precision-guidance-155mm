@@ -5,10 +5,10 @@ No placeholder coefficients are in use; every value is sourced. However:
 
   C_X0       HIGH        ASAT-13 C_A; cross-checked vs BRL MR-1582 free-flight C_D within scatter
   C_X2       MEDIUM      ASAT-13 only; BRL C_D2 implies ~1.4x larger; ~3% of axial force at nominal yaw
-  C_Nalpha   HIGH        M<1 spliced to BRL MR-1582 measured M107; M>=1 ASAT-13 (sign flipped)
+  C_Nalpha   HIGH        ASAT-13 shape scaled onto BRL MR-1582 full-scale measurement (sign flipped)
   C_Ypalpha  LOW         ASAT-13 only; BRL could not extract it from full-scale swerve
   C_lp       MEDIUM      ASAT-13 only; magnitude corroborated by a PRODAS 155 mm ERFB/BB deck
-  C_Malpha   HIGH        ASAT-13; agrees with BRL MR-1582 within 3-7% over M 0.6-2.2
+  C_Malpha   HIGH        ASAT-13, CONFIRMED by BRL measurement (ratio 1.019 +- 0.039, no trend)
   C_mq       LOW-MEDIUM  ASAT-13 only, and NOT the same quantity BRL measured (C_mq vs C_mq+C_mad)
   C_Mpalpha  LOW         ASAT-13 0-deg column; BRL M107 measured -0.57 at M 0.79 vs -0.36 here (36% apart)
 
@@ -50,7 +50,7 @@ No placeholder coefficients are in use; every value is sourced. However:
   samples/rev     18.4 at the muzzle
   muzzle Mach     0.990
   muzzle Sg       2.584   (needs > 1)
-  muzzle Sd       0.718   requires Sg > 1.086
+  muzzle Sd       0.724   requires Sg > 1.083
 
 integrating ...
   12752 steps, terminated on impact
@@ -58,8 +58,8 @@ integrating ...
 ------------------------------------------------------------------------------
 IMPACT
 ------------------------------------------------------------------------------
-  range                   2011.74 m
-  drift (right +)            4.57 m
+  range                   2011.79 m
+  drift (right +)            4.63 m
   time of flight            6.376 s
   impact velocity          302.09 m/s
   impact angle               5.87 deg below horizontal
@@ -68,7 +68,7 @@ IMPACT
   versus FT 155-AM-2 (firing table):
     range                2000.0 m   error   +0.59 %
     time of flight          6.4 s   error   -0.38 %
-    drift                   3.2 m   error  +42.72 %   (simulated drift includes Coriolis; the table does not)
+    drift                   3.2 m   error  +44.61 %   (simulated drift includes Coriolis; the table does not)
     impact velocity       300.0 m/s error   +0.70 %
     max ordinate           50.0 m   error   +0.09 %
 
@@ -78,7 +78,7 @@ STABILITY AND NUMERICAL HEALTH
   Sg               2.584 to 2.832 (final 2.832)
   Sg > 1 always    True
   Sg > 1/(Sd(2-Sd)) always  True
-  total AoA        max 0.4466 deg, mean 0.2841 deg
+  total AoA        max 0.4464 deg, mean 0.2837 deg
   |q| - 1          max 2.220e-16 over logged samples
   per-step norm drift removed by renormalisation: 1.715e-07
   NaNs             False

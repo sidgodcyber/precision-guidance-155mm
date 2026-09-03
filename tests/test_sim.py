@@ -271,7 +271,7 @@ def test_cnalpha_is_stored_positive_and_negated_exactly_once():
         assert table.coefficients_at(m).C_Nalpha > 0.0
 
     # And the stored magnitude still matches the source deck.
-    raw = aerodata.make_m107_table(splice_cnalpha=False)
+    raw = aerodata.make_m107_table(measured_cnalpha=False)
     assert raw.coefficients_at(1.20).C_Nalpha == pytest.approx(2.325)
 
     # Now the end-to-end consequence: nose up must give force up.
@@ -322,65 +322,92 @@ def test_axial_column_is_C_A_not_BRL_C_D():
 # ---------------------------------------------------------------------------
 # The subsonic C_Nalpha splice
 # ---------------------------------------------------------------------------
-def test_splice_reproduces_the_brl_measurement():
-    """At the Mach where full-scale M107 C_Nalpha was measured, the spliced
-    table must return the measured value (BRL 3-round mean 1.600)."""
+def test_measured_correction_matches_the_cluster_means():
+    """
+    The corrected C_Nalpha must reproduce the BRL full-scale cluster means at
+    the cluster centre Mach numbers, because that is how it is constructed.
+    """
     table = aerodata.make_m107_table()
-    assert table.coefficients_at(0.787).C_Nalpha == pytest.approx(1.600, abs=0.005)
+    for mach, measured in [(0.812, 1.637), (1.186, 2.573), (1.604, 2.615)]:
+        assert table.coefficients_at(mach).C_Nalpha == pytest.approx(
+            measured, rel=0.02
+        ), f"cluster at Mach {mach}"
+
+    # KNOWN LIMITATION, pinned so it cannot be forgotten: the ASAT deck ends
+    # at Mach 2.00 and is held flat above, so the Mach 2.265 cluster (measured
+    # 2.953) cannot be represented -- the correction is applied at the table
+    # knots, and the highest knot is Mach 2.00 where k = 1.0197. The model
+    # therefore returns 2.801 above Mach 2.0, about 5 % below the measurement.
+    # No trajectory in the validation ladder goes above Mach 2.01 (charge 8
+    # launches there and decelerates immediately), so this is recorded rather
+    # than papered over with an invented knot.
+    assert table.coefficients_at(2.265).C_Nalpha == pytest.approx(2.801, rel=0.01)
+    assert table.mach_max == pytest.approx(2.00)
 
 
-def test_splice_leaves_supersonic_untouched():
-    raw = aerodata.make_m107_table(splice_cnalpha=False)
-    spl = aerodata.make_m107_table()
-    for m in (1.0, 1.2, 1.5, 2.0, 2.5):
-        assert spl.coefficients_at(m).C_Nalpha == pytest.approx(
-            raw.coefficients_at(m).C_Nalpha
-        )
-    # and only C_Nalpha is altered anywhere
-    for m in (0.3, 0.8, 1.5):
-        a, b = raw.coefficients_at(m), spl.coefficients_at(m)
+def test_measured_correction_touches_only_C_Nalpha():
+    """
+    C_Malpha is NOT corrected: BRL measurement confirms the ASAT values
+    (ratio 1.019 +- 0.039, no Mach trend). Nothing but C_Nalpha may move.
+    """
+    raw = aerodata.make_m107_table(measured_cnalpha=False)
+    new = aerodata.make_m107_table()
+    for m in (0.3, 0.8, 1.2, 1.5, 2.0, 2.5):
+        a, b = raw.coefficients_at(m), new.coefficients_at(m)
         for name in aerodata.COEFFICIENT_NAMES:
             if name != "C_Nalpha":
-                assert getattr(a, name) == pytest.approx(getattr(b, name))
+                assert getattr(a, name) == pytest.approx(getattr(b, name)), name
+    # and C_Nalpha really does move
+    assert new.coefficients_at(0.8).C_Nalpha != pytest.approx(
+        raw.coefficients_at(0.8).C_Nalpha
+    )
 
 
-def test_splice_factor_is_continuous_and_bounded():
-    f = aerodata.cnalpha_splice_factor
-    assert f(0.5) == pytest.approx(aerodata.K_SUBSONIC)
-    assert f(0.80) == pytest.approx(aerodata.K_SUBSONIC)
-    assert f(1.00) == pytest.approx(1.0)
-    assert f(3.0) == pytest.approx(1.0)
-    assert f(0.90) == pytest.approx(0.5 * (aerodata.K_SUBSONIC + 1.0))
+def test_measured_factor_is_continuous_and_physically_bounded():
+    f = aerodata.cnalpha_measured_factor
+    kx = [p[0] for p in aerodata.CNALPHA_MEASURED_K]
+    ky = [p[1] for p in aerodata.CNALPHA_MEASURED_K]
+    for x, y in aerodata.CNALPHA_MEASURED_K:
+        assert f(x) == pytest.approx(y)
+    assert f(0.0) == pytest.approx(ky[0])     # held flat below
+    assert f(5.0) == pytest.approx(ky[-1])    # held flat above
     prev = f(0.0)
-    for i in range(1, 301):
+    for i in range(1, 401):
         m = i * 0.01
         cur = f(m)
-        assert cur >= prev - 1e-12, "splice factor must be non-decreasing"
-        assert abs(cur - prev) < 0.02, "splice factor must be continuous"
+        assert abs(cur - prev) < 0.01, "correction factor must be continuous"
+        assert 0.80 < cur < 1.25, "correction factor must stay physical"
         prev = cur
 
 
-def test_splice_improves_centre_of_pressure_against_brl_figure_9():
+def test_measured_correction_improves_centre_of_pressure():
     """
-    The splice is justified on the centre of pressure, which BRL measured and
-    plotted independently in its Figure 9. It must move the subsonic CP toward
-    that curve and leave the supersonic CP alone.
+    The correction is justified on the centre of pressure. Measured against
+    the CP implied by every usable full-scale BRL row, it must beat both the
+    raw computed deck and the previous subsonic-only splice, and it must land
+    at the irreducible row-to-row scatter of the measurements themselves.
     """
-    from analysis.brl_reference import cp_from_nose
+    from analysis.brl_reference import (
+        M101_TABLE_II_PAIRS, M107_TABLE_III, cp_from_nose,
+    )
 
-    raw = aerodata.make_m107_table(splice_cnalpha=False)
-    spl = aerodata.make_m107_table()
-    for mach, fig9 in [(0.60, 0.75), (0.80, 0.70)]:
-        a, b = raw.coefficients_at(mach), spl.coefficients_at(mach)
-        r_raw = abs(cp_from_nose(a.C_Malpha, a.C_Nalpha) - fig9)
-        r_spl = abs(cp_from_nose(b.C_Malpha, b.C_Nalpha) - fig9)
-        assert r_spl < r_raw, f"splice must improve CP at Mach {mach}"
-        assert r_spl < 0.15
-    for mach, fig9 in [(1.60, 1.65), (2.00, 1.80)]:
-        a, b = raw.coefficients_at(mach), spl.coefficients_at(mach)
-        assert cp_from_nose(a.C_Malpha, a.C_Nalpha) == pytest.approx(
-            cp_from_nose(b.C_Malpha, b.C_Nalpha)
-        )
+    rows = [(M, y2, cna, cma) for M, y2, _cd, cma, cna, _q, _p in M107_TABLE_III]
+    rows += [(M, y2, cna, cma) for M, y2, cma, cna in M101_TABLE_II_PAIRS]
+    rows = [r for r in rows if r[1] <= 25.0]
+
+    raw = aerodata.make_m107_table(measured_cnalpha=False)
+    new = aerodata.make_m107_table()
+
+    def cp_rms(table):
+        rs = []
+        for M, _y2, cna, cma in rows:
+            c = table.coefficients_at(M)
+            rs.append(cp_from_nose(c.C_Malpha, c.C_Nalpha) - cp_from_nose(cma, cna))
+        return (sum(v * v for v in rs) / len(rs)) ** 0.5
+
+    assert cp_rms(new) < cp_rms(raw)
+    assert cp_rms(new) < 0.13      # previous subsonic-only splice gave 0.1438
+    assert cp_rms(raw) > 0.18
 
 
 def test_moment_reference_transfer_is_identity_at_the_cg():

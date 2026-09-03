@@ -3,14 +3,14 @@ AERODYNAMIC COEFFICIENT CONFIDENCE -- read before quoting any result
 ==============================================================================
 No placeholder coefficients are in use; every value is sourced. However:
 
-  C_X0       HIGH        Khalil ASAT-13 2009; cross-checked vs BRL MR-1582 free flight
-  C_X2       MEDIUM      single source; BRL C_D2 implies ~1.4x larger; ~3% of axial force at nominal yaw
-  C_Nalpha   HIGH        Khalil ASAT-13 2009 (sign flipped); agrees with BRL MR-1582 within ~12%
-  C_Ypalpha  LOW         single source; BRL could not extract it from full-scale swerve
-  C_lp       MEDIUM      single source; magnitude corroborated by a PRODAS 155 mm ERFB/BB deck
-  C_Malpha   HIGH        Khalil ASAT-13 2009; agrees with BRL MR-1582 within 3-7% over M 0.6-2.2
-  C_mq       LOW-MEDIUM  single source; BRL free-flight scatter on this term is a factor of two
-  C_Mpalpha  LOW         sources differ ~40% at M 0.79; sign agrees (negative subsonic)
+  C_X0       HIGH        ASAT-13 C_A; cross-checked vs BRL MR-1582 free-flight C_D within scatter
+  C_X2       MEDIUM      ASAT-13 only; BRL C_D2 implies ~1.4x larger; ~3% of axial force at nominal yaw
+  C_Nalpha   HIGH        ASAT-13 shape scaled onto BRL MR-1582 full-scale measurement (sign flipped)
+  C_Ypalpha  LOW         ASAT-13 only; BRL could not extract it from full-scale swerve
+  C_lp       MEDIUM      ASAT-13 only; magnitude corroborated by a PRODAS 155 mm ERFB/BB deck
+  C_Malpha   HIGH        ASAT-13, CONFIRMED by BRL measurement (ratio 1.019 +- 0.039, no trend)
+  C_mq       LOW-MEDIUM  ASAT-13 only, and NOT the same quantity BRL measured (C_mq vs C_mq+C_mad)
+  C_Mpalpha  LOW         ASAT-13 0-deg column; BRL M107 measured -0.57 at M 0.79 vs -0.36 here (36% apart)
 
   CONVENTION ASSUMPTION: C_Ypalpha, C_Mpalpha, C_lp and C_mq are applied
   with reduced rates pd/(2V) and qd/(2V) (PRODAS / aircraft convention).
@@ -21,6 +21,13 @@ No placeholder coefficients are in use; every value is sourced. However:
 
   Range, gyroscopic stability and drift are governed by C_X0, C_Nalpha and
   C_Malpha -- all rated HIGH, each confirmed by two independent sources.
+
+  RIFLING TWIST IS A GUN PROPERTY, NOT A SHELL PROPERTY. The nominal model
+  uses 1 turn in 20 calibres (M185/M199, the tube of firing table
+  FT 155-AM-2). BRL MR-1582 measured on a 1-in-25 tube. Quoting a
+  gyroscopic stability factor without naming the tube is meaningless:
+  Sg scales as the inverse square of the twist and, at fixed twist, does
+  not depend on muzzle velocity at all.
 ==============================================================================
 
 [rung 1] vacuum vs analytic parabola ...
@@ -37,75 +44,75 @@ No placeholder coefficients are in use; every value is sourced. However:
   QE  60.0 deg  6DOF  16005.57  3DOF  16005.57  diff   +0.000 m (+0.00000 %)  TOF diff +0.00000 s
 
 [rungs 3-6] firing-table trajectories, dt=0.0002, 7 workers ...
-  chg 4 QE   97.2 mil  R    2011.6 vs   2000.0 ( +0.58 %)  TOF   6.38 vs   6.4 ( -0.39 %)  drift    3.93 vs    3.2 ( +22.95 %)
-  chg 4 QE  152.0 mil  R    3014.5 vs   3000.0 ( +0.48 %)  TOF   9.84 vs   9.8 ( +0.40 %)  drift    9.04 vs    7.8 ( +15.90 %)
-  chg 4 QE  211.6 mil  R    4013.5 vs   4000.0 ( +0.34 %)  TOF  13.52 vs  13.5 ( +0.13 %)  drift   16.73 vs   15.2 ( +10.07 %)
-  chg 5 QE  118.1 mil  R    3016.7 vs   3000.0 ( +0.56 %)  TOF   8.80 vs   8.8 ( +0.02 %)  drift    8.81 vs    7.5 ( +17.40 %)
-  chg 5 QE  280.4 mil  R    6017.8 vs   6000.0 ( +0.30 %)  TOF  19.57 vs  19.6 ( -0.13 %)  drift   39.85 vs   36.6 (  +8.87 %)
-  chg 5 QE  420.6 mil  R    7978.0 vs   8000.0 ( -0.27 %)  TOF  28.22 vs  28.2 ( +0.08 %)  drift   80.86 vs   79.2 (  +2.10 %)
-  chg 6 QE  258.4 mil  R    7025.9 vs   7000.0 ( +0.37 %)  TOF  20.77 vs  20.8 ( -0.15 %)  drift   50.71 vs   45.5 ( +11.46 %)
-  chg 6 QE  378.6 mil  R    9007.5 vs   9000.0 ( +0.08 %)  TOF  28.89 vs  28.9 ( -0.04 %)  drift   94.83 vs   88.2 (  +7.52 %)
-  chg 6 QE  539.9 mil  R   10958.5 vs  11000.0 ( -0.38 %)  TOF  39.07 vs  39.1 ( -0.08 %)  drift  170.89 vs  169.4 (  +0.88 %)
-  chg 7 QE  177.6 mil  R    7010.8 vs   7000.0 ( +0.15 %)  TOF  17.49 vs  17.6 ( -0.61 %)  drift   40.78 vs   37.1 (  +9.93 %)
-  chg 7 QE  319.8 mil  R   10025.3 vs  10000.0 ( +0.25 %)  TOF  28.57 vs  28.6 ( -0.11 %)  drift  103.86 vs   94.0 ( +10.49 %)
-  chg 7 QE  520.7 mil  R   12971.5 vs  13000.0 ( -0.22 %)  TOF  42.56 vs  42.6 ( -0.10 %)  drift  223.00 vs  211.9 (  +5.24 %)
-  chg 8 QE  141.6 mil  R    7941.4 vs   8000.0 ( -0.73 %)  TOF  16.81 vs  17.0 ( -1.12 %)  drift   41.67 vs   37.6 ( +10.83 %)
-  chg 8 QE  248.4 mil  R   10939.4 vs  11000.0 ( -0.55 %)  TOF  26.87 vs  27.2 ( -1.21 %)  drift  101.98 vs   92.4 ( +10.36 %)
-  chg 8 QE  525.3 mil  R   15840.8 vs  16000.0 ( -1.00 %)  TOF  48.49 vs  48.9 ( -0.85 %)  drift  317.20 vs  292.8 (  +8.33 %)
+  chg 4 QE   97.2 mil  R    2011.7 vs   2000.0 ( +0.58 %)  TOF   6.38 vs   6.4 ( -0.38 %)  drift    3.99 vs    3.2 ( +24.84 %)
+  chg 4 QE  152.0 mil  R    3014.6 vs   3000.0 ( +0.49 %)  TOF   9.84 vs   9.8 ( +0.40 %)  drift    9.18 vs    7.8 ( +17.74 %)
+  chg 4 QE  211.6 mil  R    4013.6 vs   4000.0 ( +0.34 %)  TOF  13.52 vs  13.5 ( +0.13 %)  drift   17.02 vs   15.2 ( +11.96 %)
+  chg 5 QE  118.1 mil  R    3017.0 vs   3000.0 ( +0.57 %)  TOF   8.80 vs   8.8 ( +0.03 %)  drift    9.27 vs    7.5 ( +23.63 %)
+  chg 5 QE  280.4 mil  R    6018.1 vs   6000.0 ( +0.30 %)  TOF  19.58 vs  19.6 ( -0.13 %)  drift   41.19 vs   36.6 ( +12.53 %)
+  chg 5 QE  420.6 mil  R    7978.3 vs   8000.0 ( -0.27 %)  TOF  28.22 vs  28.2 ( +0.08 %)  drift   83.38 vs   79.2 (  +5.28 %)
+  chg 6 QE  258.4 mil  R    7026.4 vs   7000.0 ( +0.38 %)  TOF  20.77 vs  20.8 ( -0.15 %)  drift   53.64 vs   45.5 ( +17.88 %)
+  chg 6 QE  378.6 mil  R    9007.9 vs   9000.0 ( +0.09 %)  TOF  28.89 vs  28.9 ( -0.04 %)  drift   99.26 vs   88.2 ( +12.54 %)
+  chg 6 QE  539.9 mil  R   10958.8 vs  11000.0 ( -0.37 %)  TOF  39.07 vs  39.1 ( -0.07 %)  drift  177.88 vs  169.4 (  +5.01 %)
+  chg 7 QE  177.6 mil  R    7011.3 vs   7000.0 ( +0.16 %)  TOF  17.49 vs  17.6 ( -0.60 %)  drift   43.24 vs   37.1 ( +16.54 %)
+  chg 7 QE  319.8 mil  R   10025.8 vs  10000.0 ( +0.26 %)  TOF  28.57 vs  28.6 ( -0.10 %)  drift  108.91 vs   94.0 ( +15.86 %)
+  chg 7 QE  520.7 mil  R   12971.8 vs  13000.0 ( -0.22 %)  TOF  42.56 vs  42.6 ( -0.10 %)  drift  231.88 vs  211.9 (  +9.43 %)
+  chg 8 QE  141.6 mil  R    7941.9 vs   8000.0 ( -0.73 %)  TOF  16.81 vs  17.0 ( -1.11 %)  drift   43.27 vs   37.6 ( +15.07 %)
+  chg 8 QE  248.4 mil  R   10940.0 vs  11000.0 ( -0.55 %)  TOF  26.87 vs  27.2 ( -1.20 %)  drift  106.36 vs   92.4 ( +15.11 %)
+  chg 8 QE  525.3 mil  R   15841.2 vs  16000.0 ( -0.99 %)  TOF  48.49 vs  48.9 ( -0.84 %)  drift  328.58 vs  292.8 ( +12.22 %)
 
 [rung 5b] ASAT-13 section 4.3 fully specified trajectory ...
   twist implied by the ASAT p0: 1 turn in 25.159 calibres
   muzzle spin   model   175.48 rps   spec   175.48 rps
   initial axial decel: drag 3.773 g + gravity along axis 0.695 g = 4.468 g   spec 4.45 g   (+0.40 %)
-  tof_s                66.194 s    vs     66.67  (  -0.71 %)  [text-stated]
+  tof_s                66.197 s    vs     66.67  (  -0.71 %)  [text-stated]
   summit_time_s        30.360 s    vs     31.00  (  -2.06 %)  [text-stated]
-  summit_alt_m       5634.487 m    vs   5700.00  (  -1.15 %)  [figure-read]
-  range_m           17714.852 m    vs  16500.00  (  +7.36 %)  [figure-read]
-  max_aoa_deg           1.297 deg  vs      1.30  (  -0.19 %)  [figure-read]
+  summit_alt_m       5634.751 m    vs   5700.00  (  -1.14 %)  [figure-read]
+  range_m           17714.596 m    vs  16500.00  (  +7.36 %)  [figure-read]
+  max_aoa_deg           1.297 deg  vs      1.30  (  -0.24 %)  [figure-read]
   max_aoa_time_s       32.360 s    vs     32.00  (  +1.12 %)  [figure-read]
-  drift +460.59 m  (spec: to the right)
+  drift +476.24 m  (spec: to the right)
 
 [rung 5c] maximum-range sweep, charge 8 ...
   QE  700.0 mil (39.38 deg)  range   17465.2 m
-  QE  750.0 mil (42.19 deg)  range   17693.1 m
-  QE  800.0 mil (45.00 deg)  range   17797.1 m
-  QE  850.0 mil (47.81 deg)  range   17760.0 m
-  QE  900.0 mil (50.62 deg)  range   17575.1 m
-  QE  950.0 mil (53.44 deg)  range   17234.0 m
+  QE  750.0 mil (42.19 deg)  range   17692.8 m
+  QE  800.0 mil (45.00 deg)  range   17796.6 m
+  QE  850.0 mil (47.81 deg)  range   17759.0 m
+  QE  900.0 mil (50.62 deg)  range   17573.5 m
+  QE  950.0 mil (53.44 deg)  range   17231.3 m
   -> maximum 17797 m at QE 800 mils (published M107 max range ~18100 m)
 
 [coriolis] contribution to drift, charge 8 ...
-  QE  141.6  drift with Coriolis   47.49 m, without   41.67 m, Coriolis contributes  +5.82 m; range shift  +1.03 m
-  QE  248.4  drift with Coriolis  113.92 m, without  101.98 m, Coriolis contributes +11.95 m; range shift  +1.04 m
-  QE  525.3  drift with Coriolis  345.09 m, without  317.20 m, Coriolis contributes +27.89 m; range shift  +0.67 m
+  QE  141.6  drift with Coriolis   49.08 m, without   43.27 m, Coriolis contributes  +5.82 m; range shift  +1.06 m
+  QE  248.4  drift with Coriolis  118.31 m, without  106.36 m, Coriolis contributes +11.95 m; range shift  +1.09 m
+  QE  525.3  drift with Coriolis  356.47 m, without  328.58 m, Coriolis contributes +27.89 m; range shift  +0.69 m
 
 [convergence] timestep halving, charge 8 QE 525.3 mils ...
-  dt 8.0e-04 (  5.7 samples/rev at muzzle)  R  14601.17 (-1239.648 m vs dt=1e-4)  drift 280.711 (-36.421)  TOF 47.4619
-  dt 4.0e-04 ( 11.3 samples/rev at muzzle)  R  15840.24 ( -0.577 m vs dt=1e-4)  drift 318.138 (+1.006)  TOF 48.4845
-  dt 2.0e-04 ( 22.7 samples/rev at muzzle)  R  15840.80 ( -0.021 m vs dt=1e-4)  drift 317.196 (+0.065)  TOF 48.4867
-  dt 1.0e-04 ( 45.3 samples/rev at muzzle)  R  15840.82 ( +0.000 m vs dt=1e-4)  drift 317.132 (+0.000)  TOF 48.4868
+  dt 8.0e-04 (  5.7 samples/rev at muzzle)  R  14788.25 (-1053.018 m vs dt=1e-4)  drift 298.051 (-30.459)  TOF 47.6006
+  dt 4.0e-04 ( 11.3 samples/rev at muzzle)  R  15840.68 ( -0.588 m vs dt=1e-4)  drift 329.556 (+1.046)  TOF 48.4884
+  dt 2.0e-04 ( 22.7 samples/rev at muzzle)  R  15841.25 ( -0.021 m vs dt=1e-4)  drift 328.578 (+0.067)  TOF 48.4907
+  dt 1.0e-04 ( 45.3 samples/rev at muzzle)  R  15841.27 ( +0.000 m vs dt=1e-4)  drift 328.511 (+0.000)  TOF 48.4907
 
 [sensitivity] C_Nalpha splice, twist, rate convention, drag form factor ...
   QE  525.3  splice OFF (raw ASAT)  R   15841.2  drift  325.28  maxAoA 0.761 deg
   QE  141.6  splice OFF (raw ASAT)  R    7941.4  drift   41.67  maxAoA 0.387 deg
-  QE  525.3  rate coeffs x2        R   15812.9  drift  280.94  maxAoA 1.077 deg
-  QE  141.6  rate coeffs x2        R    7924.4  drift   38.93  maxAoA 1.598 deg
-  QE  525.3  drag x0.9076          R   16584.3  drift  335.52  maxAoA 0.707 deg
-  QE  141.6  drag x0.9076          R    8232.3  drift   43.41  maxAoA 0.356 deg
+  QE  525.3  rate coeffs x2        R   15813.7  drift  291.19  maxAoA 0.999 deg
+  QE  141.6  rate coeffs x2        R    7924.8  drift   40.38  maxAoA 1.375 deg
+  QE  525.3  drag x0.9076          R   16584.8  drift  347.79  maxAoA 0.706 deg
+  QE  141.6  drag x0.9076          R    8232.8  drift   44.89  maxAoA 0.352 deg
 
 [sensitivity] twist: M185 1/20 (nominal) vs M1 1/25 ...
-  QE  141.6  M185  1/20  p0  220.65 rps  Sg  3.192  drift   41.67 vs FT   37.6 ( +10.83 %)  maxAoA 0.354 deg
-  QE  141.6  M1    1/25  p0  176.52 rps  Sg  2.043  drift   33.31 vs FT   37.6 ( -11.41 %)  maxAoA 0.268 deg
-  QE  525.3  M185  1/20  p0  220.65 rps  Sg  3.192  drift  317.20 vs FT  292.8 (  +8.33 %)  maxAoA 0.655 deg
-  QE  525.3  M1    1/25  p0  176.52 rps  Sg  2.043  drift  253.47 vs FT  292.8 ( -13.43 %)  maxAoA 0.535 deg
+  QE  141.6  M185  1/20  p0  220.65 rps  Sg  3.192  drift   43.27 vs FT   37.6 ( +15.07 %)  maxAoA 0.383 deg
+  QE  141.6  M1    1/25  p0  176.52 rps  Sg  2.043  drift   34.58 vs FT   37.6 (  -8.02 %)  maxAoA 0.324 deg
+  QE  525.3  M185  1/20  p0  220.65 rps  Sg  3.192  drift  328.58 vs FT  292.8 ( +12.22 %)  maxAoA 0.760 deg
+  QE  525.3  M1    1/25  p0  176.52 rps  Sg  2.043  drift  262.57 vs FT  292.8 ( -10.33 %)  maxAoA 0.608 deg
 
 [rung 6] one long trajectory with full history ...
   max |q|-1 over logged samples : 2.220e-16
   max per-step norm drift removed by renormalisation : 4.919e-08
   NaNs present : False
-  max total angle of attack : 0.7610 deg
+  max total angle of attack : 0.7600 deg
   mean total angle of attack : 0.4753 deg
-  Sg range over flight : 3.192 to 13.086
+  Sg range over flight : 3.192 to 13.088
   spin 1386.4 -> 1050.4 rad/s (75.8 % retained)
 
-Wrote docs/validation_results.json  (536.5 s)
+Wrote docs/validation_results.json  (342.0 s)

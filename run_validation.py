@@ -190,7 +190,7 @@ def _run_case(args):
     env = pr.Environment.from_degrees(LATITUDE_DEG, include_coriolis=coriolis)
     model = dyn.FlightModel(
         projectile=pr.M107,
-        aero=aerodata.make_m107_table(splice_cnalpha=splice),
+        aero=aerodata.make_m107_table(measured_cnalpha=splice),
         environment=env,
         rate_coefficient_scale=rate_scale,
         drag_scale=drag_scale,
