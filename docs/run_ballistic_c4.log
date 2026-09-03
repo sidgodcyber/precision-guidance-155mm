@@ -1,0 +1,87 @@
+==============================================================================
+AERODYNAMIC COEFFICIENT CONFIDENCE -- read before quoting any result
+==============================================================================
+No placeholder coefficients are in use; every value is sourced. However:
+
+  C_X0       HIGH        ASAT-13 C_A; cross-checked vs BRL MR-1582 free-flight C_D within scatter
+  C_X2       MEDIUM      ASAT-13 only; BRL C_D2 implies ~1.4x larger; ~3% of axial force at nominal yaw
+  C_Nalpha   HIGH        M<1 spliced to BRL MR-1582 measured M107; M>=1 ASAT-13 (sign flipped)
+  C_Ypalpha  LOW         ASAT-13 only; BRL could not extract it from full-scale swerve
+  C_lp       MEDIUM      ASAT-13 only; magnitude corroborated by a PRODAS 155 mm ERFB/BB deck
+  C_Malpha   HIGH        ASAT-13; agrees with BRL MR-1582 within 3-7% over M 0.6-2.2
+  C_mq       LOW-MEDIUM  ASAT-13 only, and NOT the same quantity BRL measured (C_mq vs C_mq+C_mad)
+  C_Mpalpha  LOW         ASAT-13 0-deg column; BRL M107 measured -0.57 at M 0.79 vs -0.36 here (36% apart)
+
+  CONVENTION ASSUMPTION: C_Ypalpha, C_Mpalpha, C_lp and C_mq are applied
+  with reduced rates pd/(2V) and qd/(2V) (PRODAS / aircraft convention).
+  The classical aeroballistic literature uses pd/V, whose coefficients are
+  half as large for the same physics. If the source table is in fact
+  aeroballistic-normalised, these four terms are 2x too small. Range and
+  drift are insensitive to this; dynamic stability margins are not.
+
+  Range, gyroscopic stability and drift are governed by C_X0, C_Nalpha and
+  C_Malpha -- all rated HIGH, each confirmed by two independent sources.
+
+  RIFLING TWIST IS A GUN PROPERTY, NOT A SHELL PROPERTY. The nominal model
+  uses 1 turn in 20 calibres (M185/M199, the tube of firing table
+  FT 155-AM-2). BRL MR-1582 measured on a 1-in-25 tube. Quoting a
+  gyroscopic stability factor without naming the tube is meaningless:
+  Sg scales as the inverse square of the twist and, at fixed twist, does
+  not depend on muzzle velocity at all.
+==============================================================================
+
+==============================================================================
+155 mm M107 -- uncorrected ballistic flight, full 6-DOF
+==============================================================================
+  projectile      155 mm M107 HE
+  mass            43.454 kg
+  diameter        0.155 m
+  Ix / It         0.14704 / 1.28887 kg m^2
+  CG from nose    0.4588 m (2.96 cal)
+  rifling twist   1 turn in 20 calibres (right hand)
+  charge          4, muzzle velocity 337.0 m/s
+  quadrant elev   97.2 mils = 5.468 deg
+  azimuth         0.0 deg, latitude 45.0 deg
+  Coriolis        on
+  wind (air vel)  N +0.0, E +0.0 m/s
+  timestep        0.0005 s
+
+  muzzle spin     683.0 rad/s (108.7 rev/s)
+  samples/rev     18.4 at the muzzle
+  muzzle Mach     0.990
+  muzzle Sg       2.584   (needs > 1)
+  muzzle Sd       0.718   requires Sg > 1.086
+
+integrating ...
+  12752 steps, terminated on impact
+
+------------------------------------------------------------------------------
+IMPACT
+------------------------------------------------------------------------------
+  range                   2011.74 m
+  drift (right +)            4.57 m
+  time of flight            6.376 s
+  impact velocity          302.09 m/s
+  impact angle               5.87 deg below horizontal
+  maximum ordinate          50.05 m
+
+  versus FT 155-AM-2 (firing table):
+    range                2000.0 m   error   +0.59 %
+    time of flight          6.4 s   error   -0.38 %
+    drift                   3.2 m   error  +42.72 %   (simulated drift includes Coriolis; the table does not)
+    impact velocity       300.0 m/s error   +0.70 %
+    max ordinate           50.0 m   error   +0.09 %
+
+------------------------------------------------------------------------------
+STABILITY AND NUMERICAL HEALTH
+------------------------------------------------------------------------------
+  Sg               2.584 to 2.832 (final 2.832)
+  Sg > 1 always    True
+  Sg > 1/(Sd(2-Sd)) always  True
+  total AoA        max 0.4466 deg, mean 0.2841 deg
+  |q| - 1          max 2.220e-16 over logged samples
+  per-step norm drift removed by renormalisation: 1.715e-07
+  NaNs             False
+  spin             683.0 -> 657.0 rad/s (96.2 % retained)
+
+plots written to docs/figures/  (trajectory, ground_track, angle_of_attack, diagnostics -- suffix c4_qe97)
