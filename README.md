@@ -1,17 +1,27 @@
-# 6-DOF Ballistic Simulator — 155 mm Spin-Stabilised Projectile
+# Flight Dynamics — 155 mm Spin-Stabilised Projectile
 
-**Step 1 of 7**
+**Steps 1–2 of 7**
 
-A validated six-degree-of-freedom rigid-body flight simulator for a
-spin-stabilised 155 mm artillery shell in **uncorrected ballistic flight**.
+Two models of the same shell:
 
-This is the ground-truth model. The reduced-order onboard model (step 2), the
+- **`sim/` — a validated six-degree-of-freedom rigid-body simulator** for
+  uncorrected ballistic flight. The ground-truth model. *(Step 1, closed.)*
+- **`models/mpmm.py` — the reduced-order modified point-mass model**
+  (STANAG 4355 form) that would run on the flight computer. *(Step 2, closed.)*
+
+The 6-DOF is what everything else is validated against. The
 impact-point-prediction guidance law (step 3), the roll-control loop (step 4),
-the navigation filter (step 5) and the Monte Carlo dispersion study (step 6)
-are all validated against this. If this is wrong, nothing built on it means
-anything — which is why most of the effort here went into sourcing the
-aerodynamic coefficients and into the validation ladder, not into the
-rigid-body dynamics, which are textbook.
+the navigation filter (step 5), the Monte Carlo dispersion study (step 6) and
+the embedded C port (step 7) all build on these two. If the 6-DOF is wrong,
+nothing built on it means anything — which is why most of the effort in step 1
+went into sourcing the aerodynamic coefficients and into the validation ladder,
+not into the rigid-body dynamics, which are textbook.
+
+**Both models are driven by the same coefficient tables, the same atmosphere
+and the same projectile definition.** `models/mpmm.py` contains no coefficient
+of its own, and a test enforces that by parsing the module. A comparison
+between two models that had drifted apart in their inputs would measure
+nothing.
 
 **Scope.** Numerical simulation and control algorithms only: flight dynamics,
 atmosphere, Kalman filtering, trajectory prediction. Nothing in this
@@ -25,9 +35,11 @@ circuitry, and no such work is in scope.
 ```bash
 pip install numpy scipy matplotlib pytest      # scipy is not used by sim/, only by tooling
 
-python run_ballistic.py                        # one trajectory + plots
+python run_ballistic.py                        # one 6-DOF trajectory + plots
 python run_validation.py                       # the full six-rung ladder
-python -m pytest tests -q                      # unit tests
+python -m analysis.mpmm_compare                # MPMM vs 6-DOF over the envelope
+python -m analysis.mpmm_compute                # MPMM compute-cost study
+python -m pytest tests -q                      # 85 unit tests
 ```
 
 `run_ballistic.py` writes four figures to `docs/figures/`: trajectory
@@ -92,17 +104,34 @@ sim/
   dynamics.py      PURE derivative function: state in, derivative out
   integrate.py     RK4, impact detection, trajectory logging
   diagnostics.py   Sg, Sd, yaw of repose
+models/
+  mpmm.py          PURE 7-state STANAG 4355 modified point-mass derivative
 analysis/
-  pointmass3dof.py independent 3-DOF reference for validation rung 2
+  pointmass3dof.py        independent 3-DOF reference for validation rung 2
+  brl_reference.py        verified BRL MR-1582 transcription, per-digit provenance
+  brl_figures.py          figure page map, axis calibration, damping-force table
+  coefficient_crosscheck.py  source comparison and the centre-of-pressure test
+  mpmm_compare.py         MPMM vs 6-DOF; model error; the drift test
+  mpmm_compute.py         MPMM compute cost, step size, term ablation
 run_ballistic.py   driver, plots, firing-table comparison
-run_validation.py  the six-rung validation ladder
-tests/test_sim.py  unit tests
+run_validation.py  the validation ladder (rungs 1-6 plus 5b)
+tests/test_sim.py  6-DOF unit tests   (66)
+tests/test_mpmm.py MPMM unit tests    (19)
 docs/
-  COEFFICIENTS.md  coefficient provenance and confidence table
-  VALIDATION.md    validation results, rung by rung, with numbers
+  STEP1-CLOSEOUT.md   step 1: final results, the drift residual, fitness for step 2
+  STEP2-CLOSEOUT.md   step 2: what the MPMM is worth, fitness for step 3
+  VALIDATION.md       6-DOF validation, rung by rung, with numbers
+  COEFFICIENTS.md     coefficient provenance and confidence, per Mach band
+  DIGITISATION.md     figure digitisation: method and why it was rejected
+  REVIEW-RESPONSE.md  response to the external review
+  DONE-CHECKLIST.md   SIXDOFSPEC.md section 14, item by item
+  MPMM-VALIDATION.md  MPMM vs 6-DOF across the firing-table envelope
+  MODEL-ERROR.md      the measured model-error term for the CEP budget
+  DRIFT-RESOLUTION.md the step-1 drift hypothesis, tested and refuted
+  MPMM-COMPUTE.md     what one onboard propagation costs
 ```
 
-`models/`, `gnc/` and `embedded/` are placeholders for steps 2–5 and 7.
+`gnc/` and `embedded/` are placeholders for steps 3–5 and 7.
 
 ### `dynamics.py` is pure
 
@@ -130,18 +159,47 @@ silent sign error in one of them would still produce a plausible trajectory.
 
 ---
 
+## The onboard model — `models/mpmm.py`
+
+Seven states instead of thirteen: position, velocity, axial spin. **No
+attitude.** The 6-DOF must resolve a 221 rev/s spin and is therefore stuck at
+dt ≈ 2×10⁻⁴ s; the MPMM replaces integrated attitude with STANAG 4355's
+**algebraic yaw of repose**
+
+```
+alpha_e = -( 8 Ix p (v x dv/dt) ) / ( pi rho d^3 C_Malpha |v|^4 )
+```
+
+and takes steps two orders of magnitude larger. `derivative()` is pure, like
+`dynamics.derivative`, and returns plain floats for the C port.
+
+### No fitting factors, and a test that says so
+
+Operational STANAG 4355 implementations carry a form factor `i`, a lift factor
+`fL`, a Magnus factor `QM` and a yaw-drag factor `QD`, fitted per projectile
+lot against firing trials. **All four are present as named constants, all four
+are 1.0, and `test_all_fitting_factors_are_unity` fails if any of them moves**
+— it also fails if the factor set grows, so a new one cannot be added quietly.
+
+The point is not purity for its own sake. A fitted MPMM would reproduce the
+6-DOF because it had been *made* to, and the model-error number in
+[docs/MODEL-ERROR.md](docs/MODEL-ERROR.md) would then be a measurement of the
+fitting rather than of the model.
+
+---
+
 ## Results in one table
 
 155 mm M107, charge 8 (684 m/s), against firing table FT 155-AM-2:
 
 | QE (mils) | Range (m) | vs FT | TOF (s) | vs FT | Drift (m) | vs FT |
 |---|---|---|---|---|---|---|
-| 141.6 | 7941 | −0.73 % | 16.81 | −1.12 % | +41.7 R | +10.8 % |
-| 248.4 | 10939 | −0.55 % | 26.87 | −1.21 % | +102.0 R | +10.4 % |
-| 525.3 | 15841 | −1.00 % | 48.49 | −0.85 % | +317.2 R | +8.3 % |
+| 141.6 | 7942 | −0.73 % | 16.81 | −1.11 % | +43.3 R | +15.1 % |
+| 248.4 | 10940 | −0.55 % | 26.87 | −1.20 % | +106.4 R | +15.1 % |
+| 525.3 | 15841 | −0.99 % | 48.49 | −0.84 % | +328.6 R | +12.2 % |
 
 Over all 15 firing-table points (5 charges, 2–16 km): range RMS **0.48 %**,
-mean **+0.00 %**; TOF RMS 0.53 %; drift mean +10.2 %.
+mean **+0.00 %**; TOF RMS 0.52 %; drift mean +14.4 % (see limitation 3).
 
 Drift is to the **right**, as a right-hand-rifled shell must.
 
@@ -155,10 +213,41 @@ by the source:
 | summit time | 30.36 s | ~31 s | −2.06 % |
 | peak total angle of attack | 1.2975° | ~1.3° | −0.19 % |
 
-See [docs/VALIDATION.md](docs/VALIDATION.md) for all seven rungs, all five
-charges, the timestep-convergence study and the sensitivity cases, and
-[docs/REVIEW-RESPONSE.md](docs/REVIEW-RESPONSE.md) for the response to the
-external review — including the one proposed change that was **rejected**.
+### And the reduced-order model against the 6-DOF
+
+Same 15 engagements, same coefficients, no fitting factors. Differences are
+MPMM minus 6-DOF, RMS over the envelope:
+
+| Quantity | default | with `iterate_yaw=True` |
+|---|---|---|
+| Range | 0.079 % (6.60 m) | **0.030 % (1.58 m)** |
+| Deflection | 0.715 % (1.18 m) | **0.115 % (0.11 m)** |
+| Time of flight | 0.028 s | |
+| Impact velocity | 0.058 m/s | |
+| Impact angle | 0.006° | |
+
+Initialised from a true 6-DOF state at apogee and propagated to impact — which
+is how step 3 will use it — the **model error is 0.65 m RMS in range and
+0.06 m RMS in deflection**, against a CEP budget that had been carrying an
+estimated 10 m. See [docs/MODEL-ERROR.md](docs/MODEL-ERROR.md).
+
+One full worst-case impact prediction is **about 1050 derivative evaluations**
+at the recommended dt = 0.1 s — 13 % of a 100 ms duty cycle even in CPython.
+See [docs/MPMM-COMPUTE.md](docs/MPMM-COMPUTE.md).
+
+---
+
+**Steps 1 and 2 are closed.** See
+[docs/STEP2-CLOSEOUT.md](docs/STEP2-CLOSEOUT.md) for what the reduced model is
+worth and its fitness statement for step 3, and
+[docs/STEP1-CLOSEOUT.md](docs/STEP1-CLOSEOUT.md) for
+the final ladder, what the drift residual is and everything ruled out, and an
+explicit statement of fitness for use as step-2 ground truth.
+[docs/VALIDATION.md](docs/VALIDATION.md) has all seven rungs in full;
+[docs/REVIEW-RESPONSE.md](docs/REVIEW-RESPONSE.md) records the external review
+including the change that was **rejected**;
+[docs/DIGITISATION.md](docs/DIGITISATION.md) records a figure digitisation that
+was attempted and rejected.
 
 ---
 
@@ -166,27 +255,37 @@ external review — including the one proposed change that was **rejected**.
 
 Read these before quoting any number from this model.
 
-1. **Four of eight coefficients rest on a single source.** `C_X0`, `C_Nα` and
-   `C_Mα` — the three that govern range, stability and drift — are each
-   confirmed by two independent sources and agree to 3–12 %. `C_Ypα`, `C_Mpα`,
-   `C_mq` and `C_X2` are not. Full detail in
+1. **Four of eight coefficients rest on a single source.** `C_X0` and `C_Mα`
+   are confirmed by a second, independent, *measured* source; `C_Nα` is set by
+   that measurement directly. `C_Ypα`, `C_Mpα`, `C_mq` and `C_X2` rest on the
+   computed deck alone. Full detail in
    [docs/COEFFICIENTS.md](docs/COEFFICIENTS.md).
-2. **One convention is an assumption.** The four rate-dependent coefficients
-   are applied with reduced rates pd/(2V) and qd/(2V). The classical
-   aeroballistic literature uses pd/V, whose coefficients are half as large
-   for the same physics. If the source table is aeroballistic-normalised,
-   those four terms are 2× too small. The measured effect on range and drift
-   is small; the effect on damping margins is not. `REDUCED_RATE_FACTOR` in
-   `aerodata.py` is the one constant that expresses the choice.
-3. **Drift runs ~10 % high** against the firing table (mean +10.2 % over 15
-   points, worst at the shortest ranges where the drift is only a few metres;
-   best case +0.9 %). Diagnosed, not tuned away. The subsonic `C_Nα` splice —
-   adopted on the centre-of-pressure evidence, not on drift — brought the mean
-   down from +13.3 %. Two further candidates were quantified and **rejected**:
-   changing the rifling twist to 1/25 *inverts* the error rather than closing
-   it, and a uniform `C_Nα` rescale is contradicted by BRL's own data outside
-   the subsonic band. What remains open, and what evidence would settle it, is
-   in [docs/VALIDATION.md](docs/VALIDATION.md) rung 4.
+2. **One convention is an assumption, and permanently so from this source
+   set.** The four rate-dependent coefficients are applied with reduced rates
+   pd/(2V) and qd/(2V); the classical aeroballistic literature uses pd/V, whose
+   coefficients are half as large for the same physics. The ASAT-13 paper
+   cannot settle it: its §3 gives only the rigid-body equations of motion and
+   defers the aerodynamic expansion to Etkin and to an unreproduced M.Sc.
+   thesis. Worth < 0.25 % in range but 7–11 % in drift.
+   `REDUCED_RATE_FACTOR` in `aerodata.py` is the one constant expressing the
+   choice.
+3. **Drift runs ~14 % high** against the firing table (mean +14.4 % over 15
+   points, +5.0 % to +24.8 %, worst where the absolute drift is only a few
+   metres). **Closed as an open residual with no coefficient explanation
+   left.** Every candidate has been tested against measurement and eliminated:
+   the twist (1/25 *inverts* the error and three sources give 1/20), C_Nα
+   (replaced by the measurement — drift got *worse*), C_Mα (21 measured rows
+   confirm it, ratio 1.019 ± 0.039), the missing pitch-damping force
+   (quantified at 0.70 % of the normal force), Coriolis, sign errors, and
+   timestep. Range, TOF, summit and impact velocity are unaffected.
+   **The last remaining lead — that the FT drift column came from a
+   point-mass model of a different class — was tested in step 2 and
+   refuted.** A STANAG 4355 MPMM driven by the same coefficients lands at
+   +14.38 % against the same column, agreeing with the 6-DOF's +14.37 % to
+   0.115 % RMS. Both model classes agree with each other and both disagree
+   with the firing table, so the cause is in the inputs or the reference data,
+   not in the trajectory integration. See
+   [docs/DRIFT-RESOLUTION.md](docs/DRIFT-RESOLUTION.md).
 4. **The coefficient table stops at Mach 2.00**, and charge 8 launches at
    M 2.01. End values are held flat and the excursion is reported.
 5. **Linear aerodynamics only.** `C_Mpα` at 0° yaw; no nonlinear Magnus, no
@@ -194,14 +293,22 @@ Read these before quoting any number from this model.
 6. **Not fast enough for Monte Carlo.** Measured 118 µs per RK4 step, so the
    48.5 s charge-8 flight at dt = 2×10⁻⁴ (242 447 steps) takes **28.7 s** of
    wall clock in pure CPython. That is by design — the spec's own guidance is to use
-   full 6-DOF for validation cases and the reduced-order model of step 2 for
-   the 1000-run dispersion study. `run_validation.py` parallelises across
+   full 6-DOF for validation cases and the reduced-order model for the
+   1000-run dispersion study — which now exists, runs a full trajectory in
+   milliseconds, and agrees with the 6-DOF to 0.03 % in range. `run_validation.py` parallelises across
    cores. A further ~1.5–2× is available and not taken: `integrate.rk4_step`
    still routes through the numpy-facing `dynamics.derivative`, whereas
    `dynamics._deriv_scalars` returns plain floats and avoids the small-array
    allocations. That change was deliberately not made after the validation
    ladder had been run against the current integrator.
-7. **No base bleed, no rocket assist.** Ranges beyond ~24 km are out of family
+7. **The MPMM's default omits the yaw-of-repose iteration**, which costs it a
+   factor of 3.5 in range model error and 8 in deflection model error for a
+   40 % saving in compute. `iterate_yaw=True` is recommended and is not the
+   default only so the simplest closed-form derivative stays the baseline for
+   the step-7 C port. It also uses a linear overturning moment: STANAG's
+   (C_Mα + C_Mα3·α_e²) cubic term has no published value for the M107 in
+   either source used here.
+8. **No base bleed, no rocket assist.** Ranges beyond ~24 km are out of family
    for this model and for a standard HE round.
 
 ---
