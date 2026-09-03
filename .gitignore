@@ -9,3 +9,7 @@ venv/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+
+# Local working notes — not published. README.md is the only tracked markdown.
+*.md
+!/README.md
