@@ -51,6 +51,30 @@ def _cep_of(r, d):
 
 
 # ===========================================================================
+#: The tag every published figure is drawn from. See `_pick_tag`.
+HEADLINE_TAG = "headline"
+
+
+def _pick_tag(d, tag=HEADLINE_TAG):
+    """
+    The campaigns under one tag.
+
+    A SIBLING OF `_pick`, NOT AN OVERLOAD OF IT. `_pick` chooses an
+    ENGAGEMENT and falls back to whatever is present, which is right for
+    engagements and wrong for tags: conflating the two selections is how the
+    Task C tag defect arose, and a `_pick` given a tag-keyed dict would have
+    walked past `long`, `mid2` and the rest and returned the first tag it
+    found under the name of an engagement.
+
+    There is no fallback here. A missing tag raises.
+    """
+    if tag not in d:
+        raise KeyError(
+            f"no {tag!r} tag; this campaign holds {sorted(d)}. Refusing to "
+            f"draw a different campaign under the published one's name.")
+    return d[tag]
+
+
 def _pick(d, label=None):
     """The engagement to draw. `long` when it is there, else whichever is."""
     if label and label in d:
@@ -243,9 +267,10 @@ def figure_monitor(data, path, label=None):
 
 
 # ===========================================================================
-def figure_atmosphere(data, path, label=None):
+def figure_atmosphere(data, path, label=None, tag=HEADLINE_TAG):
     """The atmospheric knowledge term against met message age."""
-    d = data["c"][_pick(data["c"], label)]["ages"]
+    per = _pick_tag(data["c"], tag)
+    d = per[_pick(per, label)]["ages"]
     order = [k for k in ("0h", "1h", "2h", "3h", "6h", "none") if k in d]
     x = list(range(len(order)))
     sr = [d[k]["knowledge_term"]["sigma_range_m"] for k in order]

@@ -17,3 +17,8 @@ venv/
 # Scratch artifacts from local runs
 /scratch_traj.npz
 /sweep_out.json
+
+# Migration backups. Retained on disk for the working copy; the pre-migration
+# file is recoverable from git regardless, since docs/monte_carlo.json is
+# tracked (`git show <commit>:docs/monte_carlo.json`).
+*.pre-tag-migration.bak

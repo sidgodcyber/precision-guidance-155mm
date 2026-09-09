@@ -1795,7 +1795,20 @@ def main(argv=None) -> int:
                 print(f"using Task U inflation {inflate}", flush=True)
 
         if "c" in tasks:
-            out.setdefault("c", {})[args.engagement] = task_c(
+            # TAG-KEYED, as Task A is. Until step 6's residual work Task C
+            # dispatched to `out["c"][engagement]` with no tag level, so
+            # `--tag` was accepted by the parser and silently ignored here and
+            # a second campaign at the same engagement REPLACED the first in
+            # place. Nothing wrong was ever published as a result -- the one
+            # repeated invocation was a deliberate restart whose first attempt
+            # never reached `_write` -- but the tables and figures would have
+            # regenerated from the replacement with nothing marking the change.
+            #
+            # `cs`, `d`, `e`, `n`, `g` and `b` still carry the flat keying.
+            # That is deliberate: re-keying them touches every consumer of the
+            # campaign JSON, and the defect is latent in all six. See
+            # docs/STEP6-CLOSEOUT.md.
+            out.setdefault("c", {}).setdefault(args.tag, {})[args.engagement] = task_c(
                 pool, mapdata, args.engagement, args.n_c or args.n,
                 args.met_scale, inflate=inflate,
                 ages=(tuple(("perfect" if a == "perfect" else

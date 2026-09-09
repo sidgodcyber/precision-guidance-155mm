@@ -462,3 +462,195 @@ def test_cep_of_reports_nan_for_rows_that_predate_the_measurement():
     s = gc.cep_of(rows)
     assert math.isnan(s["authority_limited_ever"])
     assert math.isnan(s["authority_limited_terminal"])
+
+
+
+# ===========================================================================
+# Task C's tag level
+# ===========================================================================
+# Until step 6's residual work Task C dispatched to `out["c"][engagement]`
+# with no tag level, so `--tag` was accepted by the parser and silently
+# ignored, and a second campaign at the same engagement replaced the first in
+# place. These four tests are the mechanism that keeps it fixed. They assert
+# STRUCTURE, not physics: none of them flies anything.
+def _stub_campaign(sigma_range, inflate=None, n=8):
+    """The smallest thing shaped like a Task C campaign."""
+    return {
+        "label": "long", "n": n, "met_scale": 1.0, "use_nav": False,
+        "inflate": inflate,
+        "ages": {
+            "perfect": {"age_hours": "perfect", "n": n, "cep_m": 1.0,
+                        "cep_lo_m": 0.5, "cep_hi_m": 2.0, "sd_range_m": 90.0,
+                        "sd_defl_m": 20.0, "bias_range_m": -1.0},
+            "2h": {"age_hours": 2.0, "n": n, "cep_m": 88.0,
+                   "cep_lo_m": 69.0, "cep_hi_m": 117.0, "sd_range_m": 190.0,
+                   "sd_defl_m": 42.0, "bias_range_m": -4.0,
+                   "knowledge_term": {"n": n, "sigma_range_m": sigma_range,
+                                      "sigma_defl_m": 36.8,
+                                      "bias_range_m": 7.8}},
+        },
+    }
+
+
+def test_task_c_is_tag_keyed(tmp_path, monkeypatch):
+    """
+    The dispatch writes under `d["c"][tag][engagement]`, and two tags coexist
+    rather than one replacing the other.
+
+    `task_c` is stubbed, so this exercises the dispatch and nothing else.
+    """
+    import json
+    from analysis import monte_carlo as mc
+
+    calls = []
+
+    def fake_task_c(pool, mapdata, label, n, met_scale, **kw):
+        calls.append((label, n, kw.get("inflate")))
+        return _stub_campaign(100.0 + len(calls))
+
+    monkeypatch.setattr(mc, "task_c", fake_task_c)
+    out = tmp_path / "campaign.json"
+    common = ["--tasks", "c", "--no-inflate", "--engagement", "long",
+              "--n", "8", "--workers", "1", "--out", str(out)]
+
+    assert mc.main(common + ["--tag", "headline"]) == 0
+    assert mc.main(common + ["--tag", "physical"]) == 0
+
+    d = json.loads(out.read_text(encoding="utf-8"))
+    assert sorted(d["c"]) == ["headline", "physical"], d["c"].keys()
+    assert list(d["c"]["headline"]) == ["long"]
+    assert list(d["c"]["physical"]) == ["long"]
+    # the second run did not disturb the first
+    assert (d["c"]["headline"]["long"]["ages"]["2h"]["knowledge_term"]
+            ["sigma_range_m"]) == 101.0
+    assert (d["c"]["physical"]["long"]["ages"]["2h"]["knowledge_term"]
+            ["sigma_range_m"]) == 102.0
+    assert len(calls) == 2
+
+
+def test_the_migration_is_idempotent(tmp_path):
+    """Twice equals once, and no value changes."""
+    import json
+    from analysis import migrate_c_tag as mig
+
+    flat = {"config": {"x": 1},
+            "c": {"long": _stub_campaign(148.04009757790277),
+                  "middle": _stub_campaign(60.5)},
+            "a": {"headline": {"long": {"guided": {"cep_m": 106.19}}}}}
+    p = tmp_path / "campaign.json"
+    p.write_text(json.dumps(flat, indent=1), encoding="utf-8")
+
+    first = mig.migrate(str(p), backup=False)
+    assert first["action"] == "migrated"
+    after_one = json.loads(p.read_text(encoding="utf-8"))
+
+    second = mig.migrate(str(p), backup=False)
+    assert second["action"] == "none" and second["reason"] == "already tagged"
+    after_two = json.loads(p.read_text(encoding="utf-8"))
+
+    assert after_one == after_two
+    # values moved, not rewritten
+    assert after_one["c"]["headline"] == flat["c"]
+    assert after_one["a"] == flat["a"] and after_one["config"] == flat["config"]
+    assert (after_one["c"]["headline"]["long"]["ages"]["2h"]
+            ["knowledge_term"]["sigma_range_m"]) == 148.04009757790277
+
+
+def test_the_migration_refuses_a_mixed_shape(tmp_path):
+    """Half-migrated is not a shape to guess at."""
+    import json
+    import pytest as _pytest
+    from analysis import migrate_c_tag as mig
+
+    p = tmp_path / "campaign.json"
+    p.write_text(json.dumps(
+        {"c": {"long": _stub_campaign(1.0),
+               "headline": {"middle": _stub_campaign(2.0)}}}), encoding="utf-8")
+    with _pytest.raises(SystemExit):
+        mig.migrate(str(p), backup=False)
+
+
+def test_the_migration_guards_the_published_number(tmp_path):
+    """
+    docs/CEP-FINAL.md rests on the 148 m term. If it does not read back after
+    the move, the migration stops rather than writing.
+    """
+    import json
+    import pytest as _pytest
+    from analysis import migrate_c_tag as mig
+
+    p = tmp_path / "campaign.json"
+    p.write_text(json.dumps({"c": {"long": _stub_campaign(99.0)}}),
+                 encoding="utf-8")
+    with _pytest.raises(SystemExit):
+        mig.migrate(str(p), backup=False)
+    # and it did not write
+    assert "headline" not in json.loads(p.read_text(encoding="utf-8"))["c"]
+
+
+def test_the_report_defaults_to_headline():
+    """
+    With two tags present, the atmospheric table and the budget draw
+    `headline`. The other tag appears only in a section that names it.
+    """
+    from analysis import monte_carlo_report as rep
+
+    d = {"c": {"headline": {"long": _stub_campaign(148.0, inflate={
+                    "sigma_mv": 7.895, "sigma_az": 0.00286})},
+               "physical": {"long": _stub_campaign(77.7, inflate=None)}},
+         "a": {"headline": {"long": {
+             "guided": {"n": 8, "cep_m": 106.19, "cep_lo_m": 91.5,
+                        "cep_hi_m": 130.1, "sd_range_m": 193.9,
+                        "sd_defl_m": 49.8},
+             "unguided": {"sigma_range_m": 273.6, "sigma_defl_m": 83.0}}}}}
+
+    atm = "\n".join(rep.atmospheric(d))
+    assert "148.00" in atm
+    assert "77.70" in atm, "the other tag should still be rendered"
+    # but only under a heading that names it, and after the published table
+    assert atm.index("148.00") < atm.index("77.70")
+    assert "tag `physical`" in atm
+    assert "no dispersion top-up" in atm
+    assert "not** the published" in atm
+
+    bud = "\n".join(rep.budget(d))
+    assert "148.0" in bud
+    assert "77.7" not in bud, "the budget must not draw the control campaign"
+
+
+def test_the_report_raises_on_a_missing_headline_tag():
+    """
+    No silent fallback. A campaign with only a control tag must raise rather
+    than render the control under the published campaign's name -- the same
+    failure `test_cep_of_reports_nan_for_rows_that_predate_the_measurement`
+    prevents one level down.
+    """
+    import pytest as _pytest
+    from analysis import monte_carlo_report as rep
+    from analysis import monte_carlo_figures as figs
+
+    d = {"c": {"physical": {"long": _stub_campaign(77.7)}}}
+    with _pytest.raises(KeyError):
+        rep.task_c_of(d)
+    with _pytest.raises(KeyError):
+        rep.atmospheric(d)
+    with _pytest.raises(KeyError):
+        figs._pick_tag(d["c"])
+    # and no Task C at all is not an error, it is "not run yet"
+    assert rep.task_c_of({}) == {}
+    assert rep.atmospheric({}) == []
+
+
+def test_pick_tag_is_not_pick():
+    """
+    `_pick` chooses an engagement and falls back; `_pick_tag` chooses a tag and
+    does not. Conflating them is how the defect arose: `_pick` handed a
+    tag-keyed dict walks past every engagement name and returns the first tag.
+    """
+    from analysis import monte_carlo_figures as figs
+
+    tagged = {"physical": {"long": {}}, "headline": {"long": {}}}
+    assert figs._pick(tagged) == "physical", (
+        "_pick on a tag-keyed dict returns a TAG under an engagement's name; "
+        "this is the bug _pick_tag exists to stop")
+    assert figs._pick_tag(tagged) is tagged["headline"]

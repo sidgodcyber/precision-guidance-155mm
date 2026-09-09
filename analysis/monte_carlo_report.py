@@ -54,6 +54,55 @@ def _ci(s):
     return f"[{_f(s.get('cep_lo_m'))}, {_f(s.get('cep_hi_m'))}]"
 
 
+#: The tag every published number is drawn from. Task C is tag-keyed, as Task
+#: A is, so a campaign flown under a different tag -- a control at a different
+#: dispersion, say -- sits alongside the published one rather than replacing
+#: it.
+HEADLINE_TAG = "headline"
+
+
+def task_c_of(d, tag: str = HEADLINE_TAG) -> dict:
+    """
+    The Task C campaigns under `tag`, as {engagement: campaign}.
+
+    THERE IS NO FALLBACK. If `tag` is absent this raises, rather than
+    rendering whichever tag happens to be present. A missing measurement
+    displayed as a different measurement is the failure
+    `test_cep_of_reports_nan_for_rows_that_predate_the_measurement` exists to
+    prevent, and it is the same failure one level up.
+
+    Returns {} when there is no Task C at all, which is the ordinary
+    "this campaign has not been run" case and not an error.
+    """
+    c = d.get("c")
+    if not c:
+        return {}
+    if tag not in c:
+        raise KeyError(
+            f"Task C has no {tag!r} tag; it holds {sorted(c)}. Refusing to "
+            f"render a different campaign under the published one's name.")
+    return c[tag]
+
+
+def task_c_other_tags(d, tag: str = HEADLINE_TAG) -> dict:
+    """Every Task C tag except the published one, as {tag: {engagement: ...}}."""
+    return {k: v for k, v in (d.get("c") or {}).items() if k != tag}
+
+
+def _inflate_note(c: dict) -> str:
+    """
+    Whether this campaign carried the dispersion top-up, read from the
+    campaign itself rather than inferred from its tag name.
+    """
+    inf = c.get("inflate")
+    if not inf:
+        return ("**no dispersion top-up** — the uncorrected dispersion is "
+                "whatever the modelled physical causes produce")
+    return (f"with the dispersion top-up "
+            f"(`sigma_mv` {_f(inf.get('sigma_mv'))} m/s, "
+            f"`sigma_az` {_f(inf.get('sigma_az'), 6)} rad)")
+
+
 # ===========================================================================
 def uncorrected(d) -> list:
     if "u" not in d:
@@ -95,31 +144,48 @@ def uncorrected(d) -> list:
 
 
 # ===========================================================================
+def _atmospheric_table(label: str, c: dict) -> list:
+    """One engagement's age sweep. Identical output to the pre-tag version."""
+    L = [f"Engagement `{label}`, {c['n']} rounds per age, "
+         f"{'navigation in the loop' if c['use_nav'] else 'truth-fed'}, "
+         f"paired on common random numbers against a fuze given a "
+         f"PERFECT met message.", "",
+         "`perfect` is the reference: the fuze knows the air exactly. "
+         "`none` is no met message at all — the fuze flies the standard "
+         "atmosphere, which is what every step before 6 assumed.", ""]
+    rows = []
+    for k, a in c["ages"].items():
+        kt = a.get("knowledge_term") or {}
+        rows.append([f"`{k}`", a["n"], _f(a["cep_m"]), _ci(a),
+                     _f(a["sd_range_m"]), _f(a["sd_defl_m"]),
+                     _f(a["bias_range_m"]),
+                     _f(kt.get("sigma_range_m")),
+                     _f(kt.get("sigma_defl_m")),
+                     _f(kt.get("bias_range_m"))])
+    L += _tbl(["met message", "n", "CEP, m", "95 % CI", "range 1σ, m",
+               "defl 1σ, m", "range bias, m",
+               "**term** range 1σ", "**term** defl 1σ",
+               "**term** range bias"], rows)
+    return L
+
+
 def atmospheric(d) -> list:
     if "c" not in d:
         return []
     L = ["## The atmospheric knowledge term (Task C)", ""]
-    for label, c in sorted(d["c"].items()):
-        L += [f"Engagement `{label}`, {c['n']} rounds per age, "
-              f"{'navigation in the loop' if c['use_nav'] else 'truth-fed'}, "
-              f"paired on common random numbers against a fuze given a "
-              f"PERFECT met message.", "",
-              "`perfect` is the reference: the fuze knows the air exactly. "
-              "`none` is no met message at all — the fuze flies the standard "
-              "atmosphere, which is what every step before 6 assumed.", ""]
-        rows = []
-        for k, a in c["ages"].items():
-            kt = a.get("knowledge_term") or {}
-            rows.append([f"`{k}`", a["n"], _f(a["cep_m"]), _ci(a),
-                         _f(a["sd_range_m"]), _f(a["sd_defl_m"]),
-                         _f(a["bias_range_m"]),
-                         _f(kt.get("sigma_range_m")),
-                         _f(kt.get("sigma_defl_m")),
-                         _f(kt.get("bias_range_m"))])
-        L += _tbl(["met message", "n", "CEP, m", "95 % CI", "range 1σ, m",
-                   "defl 1σ, m", "range bias, m",
-                   "**term** range 1σ", "**term** defl 1σ",
-                   "**term** range bias"], rows)
+    for label, c in sorted(task_c_of(d).items()):
+        L += _atmospheric_table(label, c)
+
+    # Any campaign flown under another tag, rendered as a clearly labelled
+    # additional section. Whether it carried the dispersion top-up is read
+    # from the campaign's own `inflate`, not inferred from the tag name.
+    for tag, per in sorted(task_c_other_tags(d).items()):
+        for label, c in sorted(per.items()):
+            L += [f"### Additional campaign: tag `{tag}`, engagement "
+                  f"`{label}`", "",
+                  f"Flown {_inflate_note(c)}. This is **not** the published "
+                  f"campaign; the table above is.", ""]
+            L += _atmospheric_table(label, c)
     return L
 
 
@@ -399,7 +465,7 @@ def budget(d, label="long", tag="headline") -> list:
                       f"step 5 said 30.4 m on three sensor seeds",
                       "step 6 (Task N)"))
 
-    c = (d.get("c") or {}).get(label)
+    c = task_c_of(d).get(label)
     if c:
         age = None
         for k in ("2h", "3h", "1h"):
@@ -502,7 +568,7 @@ def gap(d, label="long", tag="headline", target=30.0) -> list:
                       n["contribution_defl"]["sigma_m"],
                       "a perfect navigation solution — not achievable, "
                       "quoted as the bound", True))
-    c = (d.get("c") or {}).get(label)
+    c = task_c_of(d).get(label)
     if c:
         k0 = (c["ages"].get("0h") or {}).get("knowledge_term")
         k2 = (c["ages"].get("2h") or {}).get("knowledge_term")
