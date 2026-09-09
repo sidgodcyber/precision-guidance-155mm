@@ -1,0 +1,45 @@
+flying the baseline legs ...
+pass line taken from the nominal characterisation:
+  rise_forward_s           0.43599999999948125
+  rise_return_s            0.4759999999942295
+  settle_s                 1.2139999999925095
+  overshoot_pct            1.0
+  acquisition_s            1.8749999999989608
+  bandwidth_hz             1.3430920947227967
+sweeping with the controller UNINFORMED ...
+sweeping with the controller INFORMED ...
+stacked corners ...
+where it stops working ...
+  bearing drag beats the cant at x2.19, at t+21.8 s and 37.6 kPa
+  canard_aero@0.50: the NOMINAL plant cannot be held
+  bearing_both@0.50: the NOMINAL plant cannot be held
+  bearing_viscous@0.50: the NOMINAL plant cannot be held
+  canard_aero@0.75: holds for x0.46 to x1.23
+  bearing_both@0.75: holds for x0.00 to x2.19
+  bearing_viscous@0.75: holds for x0.00 to x2.22
+  canard_aero@0.85: holds for x0.46 to x1.37
+  bearing_both@0.85: holds for x0.00 to x2.19
+  bearing_viscous@0.85: holds for x0.00 to x2.22
+  uninformed: 22/31 cases meet every Task C number
+    bearing_viscous x2.0: fails rise_return_within_25pct, overshoot_under_1pct
+    bearing_viscous x2.5: fails holds_everywhere, all_steps_settle, rise_return_within_25pct, settle_within_25pct, tracking_under_1deg
+    canard_aero x0.6: fails settle_within_25pct, overshoot_under_1pct, acquisition_within_25pct
+    canard_aero x0.7: fails overshoot_under_1pct, acquisition_within_25pct
+    canard_aero x1.3: fails all_steps_settle, rise_return_within_25pct, settle_within_25pct
+    canard_aero x1.5: fails holds_everywhere, all_steps_settle, rise_forward_within_25pct, settle_within_25pct, acquisition_within_25pct
+    bearing_both x1.6: fails overshoot_under_1pct
+    bearing_both x2.0: fails rise_return_within_25pct, settle_within_25pct, overshoot_under_1pct
+    bearing_both x2.5: fails holds_everywhere, all_steps_settle, rise_return_within_25pct, settle_within_25pct, overshoot_under_1pct, tracking_under_1deg
+  informed: 22/31 cases meet every Task C number
+    bearing_viscous x2.0: fails rise_return_within_25pct, overshoot_under_1pct
+    bearing_viscous x2.5: fails holds_everywhere, all_steps_settle, rise_return_within_25pct, settle_within_25pct, tracking_under_1deg
+    canard_aero x0.6: fails overshoot_under_1pct, acquisition_within_25pct
+    canard_aero x0.7: fails overshoot_under_1pct, acquisition_within_25pct
+    canard_aero x1.3: fails all_steps_settle, rise_return_within_25pct, settle_within_25pct
+    canard_aero x1.5: fails holds_everywhere, all_steps_settle, rise_forward_within_25pct, settle_within_25pct, acquisition_within_25pct
+    bearing_both x1.6: fails overshoot_under_1pct
+    bearing_both x2.0: fails rise_return_within_25pct, overshoot_under_1pct
+    bearing_both x2.5: fails holds_everywhere, all_steps_settle, rise_return_within_25pct, settle_within_25pct, overshoot_under_1pct, tracking_under_1deg
+  corner hardest_to_hold: fails all_steps_settle, rise_forward_within_25pct, rise_return_within_25pct, settle_within_25pct, acquisition_within_25pct
+  corner slowest_return: fails all_steps_settle, rise_return_within_25pct, settle_within_25pct, overshoot_under_1pct, tracking_under_1deg, acquisition_within_25pct
+wrote docs\roll_robustness.json in 938.7 s

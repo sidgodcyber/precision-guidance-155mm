@@ -1,0 +1,37 @@
+baseline from cache C:\Users\HP\AppData\Local\Temp\claude\d--New-folder\17941b0f-458c-4eca-87a0-29da191129aa\scratchpad\baseline.json
+phase ensemble: 24 states, 15.0 deg apart, qbar spread 0.053 %
+task B: the algebra
+  stage-1 despins: True, holdable: True, sizing rule unchanged: True
+ideal hold: 6 phases x 8 angles
+  ideal: 25/48   246.1s  eta  226.4s
+  ideal: 48/48   392.2s  eta    0.0s
+task D: single, 192 runs
+  single: 25/192   256.5s  eta 1713.4s
+  single: 50/192   484.5s  eta 1376.0s
+  single: 75/192   682.5s  eta 1064.7s
+  single: 100/192   936.3s  eta  861.4s
+  single: 125/192  1461.3s  eta  783.2s
+  single: 150/192  1684.6s  eta  471.7s
+  single: 175/192  1977.9s  eta  192.1s
+  single: 192/192  3986.1s  eta    0.0s
+task D: staged, 192 runs
+  staged: 25/192   251.7s  eta 1681.2s
+  staged: 50/192   483.8s  eta 1374.0s
+  staged: 75/192   757.4s  eta 1181.5s
+  staged: 100/192  1466.7s  eta 1349.4s
+  staged: 125/192  1729.2s  eta  926.9s
+  staged: 150/192  1966.5s  eta  550.6s
+  staged: 175/192  2181.4s  eta  211.9s
+  staged: 192/192  2328.6s  eta    0.0s
+task C: delay sweep, 192 runs
+  delay: 25/192   256.5s  eta 1713.2s
+  delay: 50/192   454.8s  eta 1291.8s
+  delay: 75/192   661.3s  eta 1031.7s
+  delay: 100/192   865.9s  eta  796.6s
+  delay: 125/192  1527.0s  eta  818.5s
+  delay: 150/192  1688.3s  eta  472.7s
+  delay: 175/192  1844.9s  eta  179.2s
+  delay: 192/192  1940.5s  eta    0.0s
+deadlock demonstration, 2 runs
+  deadlock: 2/2    28.3s  eta    0.0s
+wrote docs/staged_deployment.json in 8677 s

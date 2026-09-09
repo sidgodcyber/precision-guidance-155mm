@@ -64,7 +64,7 @@ def apogee_state():
     six = ig.integrate(y6, six_model, dt=2e-4, log_every=500, t_max=200.0)
     tr = six.trajectory
     i = int(np.argmax(-tr.position[:, 2]))
-    y6ap = np.empty(dyn.STATE_SIZE)
+    y6ap = np.zeros(dyn.STATE_SIZE)
     y6ap[0:3] = tr.position[i]
     y6ap[3:6] = tr.velocity[i]
     y6ap[6:10] = tr.quaternion[i]

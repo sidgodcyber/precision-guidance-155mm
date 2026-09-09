@@ -2,7 +2,11 @@
 sim -- shared flight-dynamics library.
 
 Step 1 of the software roadmap: a 6-DOF rigid-body simulator for a
-spin-stabilised 155 mm projectile in unguided ballistic flight.
+spin-stabilised 155 mm projectile in unguided ballistic flight. Step 2.5 added
+the despun-nose degree of freedom and the canard model on top of it, taking
+the state from 13 elements to 15; `canards` is the only module that is not
+step-1 work, and it is the only one whose aerodynamics are estimated rather
+than measured -- see its docstring before using any number it produces.
 
 Frame conventions (see SIXDOFSPEC.md section 1) -- these hold everywhere
 in this package and must never be deviated from:
@@ -18,6 +22,7 @@ in this package and must never be deviated from:
 """
 
 from . import frames, atmosphere, aerodata, projectile, dynamics, integrate, diagnostics
+from . import canards
 
 __all__ = [
     "frames",
@@ -27,4 +32,5 @@ __all__ = [
     "dynamics",
     "integrate",
     "diagnostics",
+    "canards",
 ]

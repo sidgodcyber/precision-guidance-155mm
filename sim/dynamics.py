@@ -10,25 +10,61 @@ harness (step 6) or a hardware-in-the-loop rig without being rewritten.
 a Mach number outside its tabulated range. That latch is a monotone
 diagnostic, is never read back here, and cannot influence the derivative.)
 
-STATE VECTOR -- 13 elements, SIXDOFSPEC.md section 2
+STATE VECTOR -- 15 elements, SIXDOFSPEC.md section 2 plus the step-2.5
+despun nose degree of freedom
     y[0:3]   r = [x, y, z]        earth NED position       m
     y[3:6]   v = [vx, vy, vz]     earth NED velocity       m/s
     y[6:10]  q = [qw,qx,qy,qz]    attitude, body -> earth  -
     y[10:13] w = [p, q, r]        body angular rates       rad/s
+    y[13]    phi_rel              nose roll angle RELATIVE to the body   rad
+    y[14]    p_rel                nose roll rate  RELATIVE to the body   rad/s
 
-Index it only through unpack()/pack(), never by hand, so that appending the
-14th despun-nose state in a later step touches one place.
+Index it only through unpack()/unpack_nose()/pack(), never by hand. Step 1
+promised that appending the despun-nose states would touch one place; this is
+that place, and the promise held -- STATE_SIZE went from 13 to 15 and the
+first thirteen equations below are untouched.
 
 EQUATIONS OF MOTION -- SIXDOFSPEC.md section 3
     rdot      = v
     vdot      = (1/m) R(q) F_body + g_ned + a_coriolis
     qdot      = 0.5 q (x) [0, omega]
-    pdot      = L / Ix
-    qdot_rate = [M + (It - Ix) r p] / It
-    rdot_rate = [N - (It - Ix) p q] / It
+    pdot      = (L - T_internal) / Ix_body
+    qdot_rate = [M + (It p - H_x) r] / It
+    rdot_rate = [N - (It p - H_x) q] / It
+    phidot_rel = p_rel
+    pdot_rel   = pdot_nose - pdot_body
 
-The (It - Ix) cross terms are the gyroscopic coupling. They are the entire
-reason a spinning shell behaves differently from a missile.
+The (It p - H_x) cross terms are the gyroscopic coupling. They are the entire
+reason a spinning shell behaves differently from a missile. H_x is the TOTAL
+axial angular momentum,
+
+    H_x = Ix_body p + I_nose p_nose
+
+which is Ix p exactly when the nose turns with the body -- so with no nose
+assembly these reduce to step 1's (It - Ix) r p and -(It - Ix) p q. With the
+nose despun, H_x is smaller by I_nose p, so a despun kit costs about 1.2 % of
+the shell's gyroscopic stiffness.
+
+THE NOSE DEGREE OF FREEDOM -- see sim/canards.py for the full account
+------------------------------------------------------------------
+When `FlightModel.nose` is None the last two states are inert: their
+derivatives are identically zero, Ix_body is the whole projectile's Ix, and
+the model is bit-for-bit the step-1 model with two zeros appended. That is
+asserted by tests/test_canards.py,
+test_appending_the_nose_states_does_not_disturb_the_ballistic_model.
+
+When it is present, the forward section rides on a bearing and the torque
+balance about the projectile axis is
+
+    I_nose * pdot_nose = T_aero_nose + T_friction + T_brake
+    Ix_body * pdot_body = L_body_aero - (T_friction + T_brake)
+
+with p_nose = p + p_rel the nose's INERTIAL roll rate and p_rel the RELATIVE
+one. T_aero_nose comes from the canted canard pair and depends on p_nose,
+because the air does not know about the body. T_friction and T_brake are
+internal to the projectile, depend on p_rel, and appear in the body equation
+with the opposite sign -- that is Newton's third law and it is why a shell
+carrying a brake does not spin down at its ballistic rate.
 
 A NOTE ON THE SHAPE OF THIS FILE
 --------------------------------
@@ -56,9 +92,11 @@ from .projectile import Environment, LaunchConditions, Projectile
 
 __all__ = [
     "STATE_SIZE",
+    "BODY_STATE_SIZE",
     "FlightModel",
     "AeroState",
     "unpack",
+    "unpack_nose",
     "pack",
     "initial_state",
     "aero_state",
@@ -67,21 +105,30 @@ __all__ = [
     "ControlCallback",
 ]
 
-STATE_SIZE = 13
+STATE_SIZE = 15
+#: The thirteen rigid-body states of step 1. The two nose states follow them.
+BODY_STATE_SIZE = 13
 
 _IR = slice(0, 3)
 _IV = slice(3, 6)
 _IQ = slice(6, 10)
 _IW = slice(10, 13)
+_IN = slice(13, 15)
 
 #: Below this relative airspeed the aerodynamic model is switched off rather
 #: than dividing by V. A shell is never this slow in flight; the guard exists
 #: so a degenerate initial condition produces zeros instead of NaNs.
 V_EPS = 1e-6
 
-#: Signature of the step-4 canard model. It receives the time, the state and
-#: the already-computed aerodynamic state, and returns an ADDITIONAL body-frame
-#: force and moment about the CG. Step 1 passes None.
+#: Signature of the canard model (sim/canards.py). It receives the time, the
+#: state and the already-computed aerodynamic state, and returns an ADDITIONAL
+#: body-frame force and moment about the CG. Step 1 passes None.
+#:
+#: A callback may return either
+#:     (force_body, moment_body)                    -- step-1 seam, unchanged
+#:     (force_body, moment_body, nose_roll_torque)  -- step-2.5 canard model
+#: In the three-element form the roll moment is routed to the DESPUN NOSE
+#: instead of to the body, and moment_body's x component must be zero.
 ControlCallback = Callable[[float, np.ndarray, "AeroState"], tuple]
 
 
@@ -99,8 +146,23 @@ class FlightModel:
     environment: Environment = field(default_factory=Environment)
     #: wind(altitude_m) -> [north, east, 0], the VELOCITY OF THE AIR, m/s.
     wind: Callable[[float], np.ndarray] = atm.no_wind
-    #: Step-4 hook. None in step 1 (unguided ballistic flight).
+    #: Step 6. atmosphere(altitude_m) -> (T, p, rho, a). None is the U.S.
+    #: Standard Atmosphere and is what steps 1 to 5.5 flew; the call below is
+    #: then `atm.isa_scalars` directly, so the nominal hot path is unchanged.
+    #: A `sim.atmosphere.MetProfile.scalars` here is the round flying through
+    #: a REALISED atmosphere rather than the standard one, which is what
+    #: docs/ATMOSPHERIC-ERROR.md measures.
+    atmosphere: Optional[Callable[[float], tuple]] = None
+    #: Step-4 hook, filled in by sim.canards.CanardModel at step 2.5.
+    #: None in step 1 (unguided ballistic flight).
     control: Optional[ControlCallback] = None
+    #: The despun forward section. None means no nose degree of freedom: the
+    #: last two states are inert and the model reduces exactly to step 1's.
+    #: Type is sim.canards.NoseAssembly. It is annotated `object` rather than
+    #: imported because the layering runs one way -- canards.py imports this
+    #: module, this module imports nothing from canards.py -- and only the
+    #: two duck-typed methods friction_torque() and brake_torque() are used.
+    nose: Optional[object] = None
     #: Set False to zero every aerodynamic force and moment (validation rung 1).
     aero_enabled: bool = True
     #: Set False to zero all aerodynamic MOMENTS and the normal and Magnus
@@ -135,6 +197,26 @@ class FlightModel:
         object.__setattr__(self, "_dI", float(p.I_transverse - p.I_axial))
         object.__setattr__(self, "_site_alt", float(self.environment.site_altitude))
         object.__setattr__(self, "_wind_is_zero", self.wind is atm.no_wind)
+        object.__setattr__(self, "_atmo", self.atmosphere)
+        # Nose bookkeeping. The nose assembly's inertia is part of the
+        # projectile's measured Ix, so the BODY's axial inertia is what is
+        # left after it is removed. Ignoring this would credit the shell with
+        # the nose's inertia twice.
+        nose = self.nose
+        if nose is None:
+            object.__setattr__(self, "_Ix_body", float(p.I_axial))
+            object.__setattr__(self, "_I_nose", 0.0)
+            object.__setattr__(self, "_nose_held", False)
+        else:
+            I_n = float(nose.inertia)
+            if I_n <= 0.0 or I_n >= float(p.I_axial):
+                raise ValueError(
+                    "nose axial inertia must be positive and smaller than the "
+                    f"projectile's Ix ({p.I_axial:.6f} kg m^2); got {I_n}"
+                )
+            object.__setattr__(self, "_Ix_body", float(p.I_axial) - I_n)
+            object.__setattr__(self, "_I_nose", I_n)
+            object.__setattr__(self, "_nose_held", nose.hold_angle is not None)
 
 
 @dataclass(frozen=True)
@@ -161,21 +243,47 @@ class AeroState:
 
 
 def unpack(y: np.ndarray):
-    """Split the flat state into (r, v, q, omega). Views, not copies."""
+    """
+    Split the flat state into (r, v, q, omega). Views, not copies.
+
+    The two nose states are deliberately NOT returned here: every step-1
+    caller unpacks four values and none of them wants a fifth. Use
+    unpack_nose() for the nose.
+    """
     return y[_IR], y[_IV], y[_IQ], y[_IW]
 
 
-def pack(r, v, q, omega) -> np.ndarray:
-    """Assemble a flat state vector."""
+def unpack_nose(y: np.ndarray):
+    """(phi_rel, p_rel) -- the nose roll angle and rate RELATIVE to the body."""
+    return float(y[13]), float(y[14])
+
+
+def pack(r, v, q, omega, nose=None) -> np.ndarray:
+    """
+    Assemble a flat state vector.
+
+    `nose` is the optional (phi_rel, p_rel) pair; omitted, it is zeros, which
+    is the correct initial condition for a nose that is locked to the body at
+    the muzzle.
+    """
     y = np.empty(STATE_SIZE)
     y[_IR] = r
     y[_IV] = v
     y[_IQ] = q
     y[_IW] = omega
+    if nose is None:
+        y[_IN] = 0.0
+    else:
+        y[_IN] = nose
     return y
 
 
-def initial_state(projectile: Projectile, launch: LaunchConditions) -> np.ndarray:
+def initial_state(
+    projectile: Projectile,
+    launch: LaunchConditions,
+    nose_angle: float = 0.0,
+    nose_rate: float = 0.0,
+) -> np.ndarray:
     """
     Muzzle state, SIXDOFSPEC.md section 9.
 
@@ -183,6 +291,13 @@ def initial_state(projectile: Projectile, launch: LaunchConditions) -> np.ndarra
         q0 = q_from_euler(azimuth, QE, roll)
         v0 = R(q0) @ [V_muzzle, 0, 0]
         p0 = 2 pi V / (twist_calibers * d)   right-hand rifling -> positive
+        phi_rel0 = 0, p_rel0 = 0             nose locked to the body in the
+                                             tube, canards stowed
+
+    The nose leaves the muzzle locked to the body because it is the setback
+    and spin-up loads, not the bearing, that carry it up the tube. Both nose
+    states are therefore zero at t = 0, and they only become live when the
+    canards deploy.
     """
     q0 = frames.quat_from_euler(
         launch.azimuth, launch.quadrant_elevation, launch.initial_roll
@@ -192,7 +307,7 @@ def initial_state(projectile: Projectile, launch: LaunchConditions) -> np.ndarra
     omega0 = np.array(
         [projectile.muzzle_spin(launch.muzzle_velocity), launch.initial_q, launch.initial_r]
     )
-    return pack(r0, v0, q0, omega0)
+    return pack(r0, v0, q0, omega0, nose=(nose_angle, nose_rate))
 
 
 def _aero_core(y: np.ndarray, model: FlightModel) -> tuple:
@@ -266,7 +381,10 @@ def _aero_core(y: np.ndarray, model: FlightModel) -> tuple:
     # The origin is at the muzzle, so height above sea level offsets by the
     # site altitude.
     altitude = model._site_alt - float(y[2])
-    _T, _p, rho, a_snd = atm.isa_scalars(altitude)
+    if model._atmo is None:
+        _T, _p, rho, a_snd = atm.isa_scalars(altitude)
+    else:
+        _T, _p, rho, a_snd = model._atmo(altitude)
 
     vx = float(y[3])
     vy = float(y[4])
@@ -385,7 +503,18 @@ def aero_state(t: float, y: np.ndarray, model: FlightModel) -> AeroState:
     Aerodynamic angles, coefficients and the body-frame aerodynamic force and
     moment about the CG. Thin wrapper over _aero_core(); the physics is there.
     """
-    c = _aero_core(y, model)
+    return _aero_state_from_core(y, model, _aero_core(y, model))
+
+
+def _aero_state_from_core(y: np.ndarray, model: FlightModel, c: tuple) -> AeroState:
+    """
+    Build the AeroState from an ALREADY COMPUTED _aero_core() tuple.
+
+    This exists because the derivative needs both, and calling _aero_core
+    twice per derivative -- which is what the step-1 code did whenever a
+    control callback was attached -- doubles the cost of every guided
+    trajectory for nothing.
+    """
     fx, fy, fz, mx, my, mz = c[0], c[1], c[2], c[3], c[4], c[5]
     V, mach, delta, qbar, rho, a_snd, altitude = c[6], c[7], c[8], c[9], c[10], c[11], c[12]
     u, v, w = c[13], c[14], c[15]
@@ -417,22 +546,31 @@ def aero_state(t: float, y: np.ndarray, model: FlightModel) -> AeroState:
 
 def forces_moments(t: float, y: np.ndarray, model: FlightModel):
     """
-    Total body-frame force and moment about the CG, including any control
-    contribution. Returns (F_body, M_body, AeroState).
+    Total body-frame force and moment ON THE BODY about the CG, including any
+    control contribution. Returns (F_body, M_body, AeroState, T_nose).
+
+    T_nose is the control callback's third return value, the roll torque
+    acting on the DESPUN NOSE, and it is reported separately rather than
+    folded into M_body because it is not a body moment. Adding it to M_body
+    here would contradict the derivative, which routes it through the nose's
+    own torque balance. A two-element callback gives T_nose = 0.
     """
     st = aero_state(t, y, model)
     F = st.force_body
     M = st.moment_body
+    T_nose = 0.0
     if model.control is not None:
-        dF, dM = model.control(t, y, st)
-        F = F + np.asarray(dF, dtype=float)
-        M = M + np.asarray(dM, dtype=float)
-    return F, M, st
+        out = model.control(t, y, st)
+        F = F + np.asarray(out[0], dtype=float)
+        M = M + np.asarray(out[1], dtype=float)
+        if len(out) > 2:
+            T_nose = float(out[2])
+    return F, M, st, T_nose
 
 
 def _deriv_scalars(t: float, y, model: FlightModel) -> list:
     """
-    The 13-element state derivative as a plain list of Python floats.
+    The 15-element state derivative as a plain list of Python floats.
 
     This is what the integrator calls. It contains no numpy at all: over
     hundreds of thousands of steps, boxing every intermediate into np.float64
@@ -450,11 +588,17 @@ def _deriv_scalars(t: float, y, model: FlightModel) -> list:
     r10 = c[19]; r11 = c[20]; r12 = c[21]
     r20 = c[22]; r21 = c[23]; r22 = c[24]
 
+    # Canard loads. T_nose_aero is the canard roll moment, which acts on the
+    # despun nose and NOT on the body; it is kept out of mx deliberately.
+    T_nose_aero = 0.0
     if model.control is not None:
-        st = aero_state(t, np.asarray(y, dtype=float), model)
-        dF, dM = model.control(t, y, st)
+        st = _aero_state_from_core(y, model, c)
+        out = model.control(t, y, st)
+        dF = out[0]; dM = out[1]
         fx += float(dF[0]); fy += float(dF[1]); fz += float(dF[2])
         mx += float(dM[0]); my += float(dM[1]); mz += float(dM[2])
+        if len(out) > 2:
+            T_nose_aero = float(out[2])
 
     # --- translation: body force to earth, plus gravity and Coriolis ------
     inv_m = model._inv_mass
@@ -488,8 +632,61 @@ def _deriv_scalars(t: float, y, model: FlightModel) -> list:
     qr = float(y[11])
     rr = float(y[12])
 
-    # --- rotation: Euler equations for an axisymmetric body ---------------
+    # --- the despun nose degree of freedom ---------------------------------
+    #
+    # Rates, and which is which -- see sim/canards.py:
+    #     p       = y[10]      BODY   inertial roll rate
+    #     p_rel   = y[14]      NOSE   rate relative to the body
+    #     p_nose  = p + p_rel  NOSE   inertial roll rate
+    #
+    # T_aero acts on the nose's INERTIAL motion, because the air does not
+    # know about the body. Friction and the brake act on the RELATIVE motion,
+    # because they are internal to the projectile -- and being internal, they
+    # appear in the body equation with the opposite sign.
+    #
+    # GYROSCOPIC STIFFNESS IS SET BY THE TOTAL AXIAL ANGULAR MOMENTUM, and
+    # once part of the projectile is despun that is no longer Ix * p:
+    #
+    #     H_x = Ix_body * p + I_nose * p_nose
+    #
+    # The transverse equations below carry (It*p - H_x), which reduces to the
+    # step-1 (It - Ix) p exactly when the nose turns with the body. With the
+    # nose despun, H_x falls by I_nose * p, about 1.2 % here, so despinning
+    # the nose costs a little gyroscopic stability. Small, but it is the kind
+    # of bookkeeping that is invisible in a trajectory plot and wrong forever
+    # once it is wrong.
+    nose = model.nose
     dI = model._dI
+    if nose is None:
+        # No nose degree of freedom: the two states are inert and the body
+        # spins exactly as it did in step 1.
+        pdot_body = mx / model._Ix
+        dphi_rel = 0.0
+        dp_rel = 0.0
+        gyro = dI * p
+    elif model._nose_held:
+        # Ideal hold. phi_nose is pinned by an assumed perfect servo, so
+        # pdot_nose = 0 and the internal torque must be exactly -T_aero_nose.
+        # Its reaction, +T_aero_nose, is what the body feels: with the nose
+        # held, the entire canted-canard despin torque is transmitted through
+        # the slipping brake into the shell. The two nose states carry no
+        # meaning in this mode and are frozen at their initial values.
+        pdot_body = (mx + T_nose_aero) / model._Ix_body
+        dphi_rel = 0.0
+        dp_rel = 0.0
+        # p_nose = 0, so H_x = Ix_body * p.
+        gyro = (model._It - model._Ix_body) * p
+    else:
+        p_rel = float(y[14])
+        T_int = nose.friction_torque(p_rel) + nose.brake_torque(t, p_rel)
+        pdot_body = (mx - T_int) / model._Ix_body
+        pdot_nose = (T_nose_aero + T_int) / model._I_nose
+        dphi_rel = p_rel
+        dp_rel = pdot_nose - pdot_body
+        # H_x = Ix_body*p + I_nose*(p + p_rel) = Ix*p + I_nose*p_rel
+        gyro = dI * p - model._I_nose * p_rel
+
+    # --- rotation: Euler equations for an axisymmetric body ---------------
     return [
         vx,
         vy,
@@ -501,18 +698,20 @@ def _deriv_scalars(t: float, y, model: FlightModel) -> list:
         0.5 * (qw * p + qy * rr - qz * qr),
         0.5 * (qw * qr - qx * rr + qz * p),
         0.5 * (qw * rr + qx * qr - qy * p),
-        mx / model._Ix,
-        (my + dI * rr * p) / model._It,
-        (mz - dI * p * qr) / model._It,
+        pdot_body,
+        (my + gyro * rr) / model._It,
+        (mz - gyro * qr) / model._It,
+        dphi_rel,
+        dp_rel,
     ]
 
 
 def derivative(t: float, y: np.ndarray, model: FlightModel) -> np.ndarray:
     """
-    The 13-element state derivative. Pure.
+    The 15-element state derivative. Pure.
 
     t     time, s. Unused by the ballistic model; present for the control hook.
-    y     13-element state.
+    y     15-element state.
     model FlightModel bundling projectile, aero, environment, wind, control.
 
     This is the numpy-facing form. The integrator uses _deriv_scalars()

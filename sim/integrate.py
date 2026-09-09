@@ -62,6 +62,12 @@ class Trajectory:
     density: np.ndarray         # (n,) kg/m^3
     dynamic_pressure: np.ndarray  # (n,) Pa
     quat_norm_error: np.ndarray   # (n,) |norm(q) - 1| BEFORE renormalisation
+    #: (n,) nose roll angle RELATIVE to the body, rad. Unwrapped: it runs to
+    #: tens of thousands of radians over a guided flight, which double
+    #: precision resolves to better than 1e-11 rad, so it is not wrapped.
+    nose_angle: np.ndarray = None
+    #: (n,) nose roll rate RELATIVE to the body, rad/s.
+    nose_rate: np.ndarray = None
 
     @property
     def altitude(self) -> np.ndarray:
@@ -81,6 +87,15 @@ class Trajectory:
     def spin(self) -> np.ndarray:
         return self.omega[:, 0]
 
+    @property
+    def nose_spin(self) -> np.ndarray:
+        """
+        Nose INERTIAL roll rate, rad/s -- body spin plus relative rate. This
+        is the one the canard aerodynamics acts on, and the one that should
+        sit near zero once the nose has despun.
+        """
+        return self.omega[:, 0] + self.nose_rate
+
     def euler(self) -> np.ndarray:
         """(n,3) array of (yaw, pitch, roll) in radians. Diagnostic only."""
         return np.array([frames.euler_from_quat(q) for q in self.quaternion])
@@ -91,7 +106,7 @@ class IntegrationResult:
     """Outcome of one trajectory."""
 
     trajectory: Trajectory
-    impact_state: np.ndarray          # 13-element state interpolated to z = 0
+    impact_state: np.ndarray          # 15-element state interpolated to z = 0
     impact_time: float                # s
     range_m: float                    # downrange distance at impact, m
     drift_m: float                    # crossrange at impact, positive RIGHT, m
@@ -131,6 +146,10 @@ def _interp_to_ground(y0: np.ndarray, y1: np.ndarray, t0: float, dt: float):
 
     Returns (y_impact, t_impact). The quaternion is renormalised after the
     interpolation, since a linear blend of two unit quaternions is not unit.
+
+    The nose states are interpolated along with everything else. The nose
+    ANGLE at impact is therefore accurate to the same order as the position,
+    which is all anyone wants of it; nothing downstream reads it.
     """
     z0, z1 = y0[2], y1[2]
     if z1 == z0:
@@ -151,21 +170,62 @@ def integrate(
     max_steps: int = 20_000_000,
     stop_on_impact: bool = True,
     progress: Optional[Callable[[float, np.ndarray], None]] = None,
+    t_start: float = 0.0,
+    step_hook: Optional[Callable[[float, np.ndarray, object], None]] = None,
 ) -> IntegrationResult:
     """
     Integrate from y0 until ground impact.
 
-    y0         13-element initial state (see dynamics.initial_state)
+    y0         15-element initial state (see dynamics.initial_state)
     dt         fixed step, s. Must resolve the spin: see the module docstring.
     log_every  log one sample every this many steps (plus the first and the
                interpolated impact sample)
+    t_start    time attached to y0. Zero for a launch; non-zero to RESTART
+               mid-trajectory from a logged state.
+    step_hook  called as hook(t, y, model) after every COMPLETED step, never
+               inside one. See below.
+
+    THE STEP HOOK, AND WHY A DIGITAL CONTROLLER NEEDS ONE
+    -----------------------------------------------------
+    `derivative()` is pure and RK4 evaluates it four times per step at three
+    different times, on states that are predictors rather than trajectory
+    points. Anything with memory -- a control law with an integrator, a
+    zero-order hold, an actuator lag -- must therefore NOT live inside it.
+
+    A sampled controller does not need to. It updates at fixed instants and
+    holds its output between them, so within one step its command is a
+    constant and `NoseAssembly.brake_command` can stay the function of time
+    alone that step 2.5 made it. `step_hook` is where that update happens: it
+    sees the completed state exactly once per step, at the step boundary,
+    where the discontinuity it introduces is harmless. `gnc.roll_control.
+    BrakeLaw` is the intended user, and it samples at its own rate rather than
+    at every step.
+
+    The hook must not mutate `y`. It is given the array, not a copy, for the
+    same reason `_log` is: copying 15 floats half a million times is not free.
+    It is given the MODEL rather than an `AeroState` so that a hook sampling
+    more slowly than the integrator steps pays for the aerodynamics only on
+    the steps it actually uses.
+
+    RESTARTING
+    ----------
+    A logged Trajectory sample is an exact integrator state, not an
+    interpolation, so restarting from one with its own logged time reproduces
+    the remainder of the trajectory bit for bit. That is what
+    analysis/authority.py relies on to avoid re-flying the shared pre-
+    deployment leg once per commanded roll angle, and
+    tests/test_canards.py::test_restarting_from_a_logged_state_reproduces_the
+    _trajectory pins it.
+
+    `max_ordinate` after a restart is the apogee of the REMAINING flight, not
+    of the whole trajectory. Nothing else in the result depends on t_start.
     """
     if y0.shape != (STATE_SIZE,):
         raise ValueError(f"expected a {STATE_SIZE}-element state, got {y0.shape}")
 
     y = y0.astype(float).copy()
     y[6:10] = frames.quat_normalize(y[6:10])
-    t = 0.0
+    t = float(t_start)
 
     log_t: list[float] = []
     log_r: list[np.ndarray] = []
@@ -180,6 +240,8 @@ def integrate(
     log_rho: list[float] = []
     log_qbar: list[float] = []
     log_qerr: list[float] = []
+    log_nphi: list[float] = []
+    log_nrate: list[float] = []
 
     max_norm_err = 0.0
     max_aoa = 0.0
@@ -200,8 +262,12 @@ def integrate(
         log_rho.append(st.density)
         log_qbar.append(st.dynamic_pressure)
         log_qerr.append(norm_err)
+        log_nphi.append(float(yy[13]))
+        log_nrate.append(float(yy[14]))
 
     _log(t, y, 0.0)
+    if step_hook is not None:
+        step_hook(t, y, model)
 
     terminated = "max_time"
     step = 0
@@ -232,6 +298,9 @@ def integrate(
         y = y_new
         t = t_prev + dt
         step += 1
+
+        if step_hook is not None:
+            step_hook(t, y, model)
 
         alt = -y[2]
         if alt > max_ord:
@@ -268,6 +337,8 @@ def integrate(
         density=np.array(log_rho),
         dynamic_pressure=np.array(log_qbar),
         quat_norm_error=np.array(log_qerr),
+        nose_angle=np.array(log_nphi),
+        nose_rate=np.array(log_nrate),
     )
 
     r, v, _, _ = unpack(y)

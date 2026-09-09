@@ -182,6 +182,15 @@ class MpmmModel:
     aero: AeroTable
     environment: Environment = field(default_factory=Environment)
     wind: Callable[[float], object] = atm.no_wind
+    #: Step 6. atmosphere(altitude_m) -> (T, p, rho, a). None is the U.S.
+    #: Standard Atmosphere, which is what every step before 6 used and what
+    #: the onboard model uses when it has no met message.
+    #:
+    #: THIS IS THE FUZE'S BELIEF ABOUT THE AIR, not the air. Giving this the
+    #: same profile `sim.dynamics.FlightModel.atmosphere` has is a fuze with
+    #: a perfect met message; giving it a different one is the
+    #: atmospheric-knowledge error of docs/ATMOSPHERIC-ERROR.md.
+    atmosphere: Optional[Callable[[float], tuple]] = None
     factors: FittingFactors = field(default_factory=FittingFactors)
     #: Include the Magnus force. On by default; used by the term-ablation
     #: study in docs/MPMM-COMPUTE.md.
@@ -208,6 +217,7 @@ class MpmmModel:
         object.__setattr__(self, "_Ix", float(p.I_axial))
         object.__setattr__(self, "_site_alt", float(self.environment.site_altitude))
         object.__setattr__(self, "_wind_is_zero", self.wind is atm.no_wind)
+        object.__setattr__(self, "_atmo", self.atmosphere)
         w = atm.earth_rate_ned(self.environment.latitude, 0.0)
         object.__setattr__(self, "_omega_ned", (float(w[0]), float(w[1]), float(w[2])))
 
@@ -311,7 +321,10 @@ def yaw_of_repose(t: float, y: np.ndarray, model: MpmmModel, iterate: bool = Fal
     v = (float(y[3]), float(y[4]), float(y[5]))
     p = float(y[6])
     altitude = model._site_alt - float(y[2])
-    _T, _pr, rho, a_snd = atm.isa_scalars(altitude)
+    if model._atmo is None:
+        _T, _pr, rho, a_snd = atm.isa_scalars(altitude)
+    else:
+        _T, _pr, rho, a_snd = model._atmo(altitude)
 
     if model._wind_is_zero:
         v_rel = v
@@ -355,7 +368,10 @@ def _forces(t: float, y: np.ndarray, model: MpmmModel, base_acc=None):
     """
     v = (float(y[3]), float(y[4]), float(y[5]))
     altitude = model._site_alt - float(y[2])
-    _T, _pr, rho, a_snd = atm.isa_scalars(altitude)
+    if model._atmo is None:
+        _T, _pr, rho, a_snd = atm.isa_scalars(altitude)
+    else:
+        _T, _pr, rho, a_snd = model._atmo(altitude)
     if model._wind_is_zero:
         v_rel = v
     else:
@@ -429,7 +445,10 @@ def derivative(t: float, y, model: MpmmModel) -> list:
     """
     v = (float(y[3]), float(y[4]), float(y[5]))
     altitude = model._site_alt - float(y[2])
-    _T, _pr, rho, a_snd = atm.isa_scalars(altitude)
+    if model._atmo is None:
+        _T, _pr, rho, a_snd = atm.isa_scalars(altitude)
+    else:
+        _T, _pr, rho, a_snd = model._atmo(altitude)
 
     if model._wind_is_zero:
         v_rel = v
@@ -522,7 +541,8 @@ def propagate_to_impact(
         log_a.append(al)
         alt = model._site_alt - yy[2]
         V = math.sqrt(yy[3] ** 2 + yy[4] ** 2 + yy[5] ** 2)
-        log_m.append(V / atm.isa_scalars(alt)[3])
+        log_m.append(V / (atm.isa_scalars(alt) if model._atmo is None
+                          else model._atmo(alt))[3])
 
     if log_every:
         _record(t, y)

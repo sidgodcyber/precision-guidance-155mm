@@ -104,7 +104,7 @@ def run_case(args):
     # ---- Task C: MPMM initialised from the 6-DOF state at apogee --------
     alt = -tr.position[:, 2]
     i_ap = int(np.argmax(alt))
-    y6_ap = np.empty(dyn.STATE_SIZE)
+    y6_ap = np.zeros(dyn.STATE_SIZE)
     y6_ap[0:3] = tr.position[i_ap]
     y6_ap[3:6] = tr.velocity[i_ap]
     y6_ap[6:10] = tr.quaternion[i_ap]

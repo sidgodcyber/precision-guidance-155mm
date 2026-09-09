@@ -1,0 +1,203 @@
+[U] uncorrected dispersion, long, n=96, met x1.0, message 2.0 h old
+  drew 96 rounds (16.0 s: a fire-control solution and a fuze setting each)
+  U/all: 16/96     50.0 s  (eta  250.1 s)
+  U/all: 32/96    101.1 s  (eta  202.2 s)
+  U/all: 48/96    151.4 s  (eta  151.4 s)
+  U/all: 64/96    210.5 s  (eta  105.2 s)
+  U/all: 80/96    276.1 s  (eta   55.2 s)
+  U/all: 96/96    338.0 s  (eta    0.0 s)
+    all                  sigma_r   173.52 m  sigma_d   74.09 m  bias_r     4.13 m
+  U/muzzle_velocity: 16/96     71.0 s  (eta  355.1 s)
+  U/muzzle_velocity: 32/96    132.1 s  (eta  264.1 s)
+  U/muzzle_velocity: 48/96    187.0 s  (eta  187.0 s)
+  U/muzzle_velocity: 64/96    253.0 s  (eta  126.5 s)
+  U/muzzle_velocity: 80/96    298.9 s  (eta   59.8 s)
+  U/muzzle_velocity: 96/96    347.4 s  (eta    0.0 s)
+    muzzle_velocity      sigma_r    51.93 m  sigma_d    1.90 m  bias_r    -1.02 m
+  U/laying: 16/96     65.6 s  (eta  327.8 s)
+  U/laying: 32/96    137.6 s  (eta  275.3 s)
+  U/laying: 48/96    206.6 s  (eta  206.6 s)
+  U/laying: 64/96    266.5 s  (eta  133.3 s)
+  U/laying: 80/96    326.0 s  (eta   65.2 s)
+  U/laying: 96/96    376.3 s  (eta    0.0 s)
+    laying               sigma_r     6.52 m  sigma_d    8.18 m  bias_r    -0.52 m
+  U/shell: 16/96     55.0 s  (eta  275.0 s)
+  U/shell: 32/96    112.9 s  (eta  225.9 s)
+  U/shell: 48/96    169.1 s  (eta  169.1 s)
+  U/shell: 64/96    219.4 s  (eta  109.7 s)
+  U/shell: 80/96    273.3 s  (eta   54.7 s)
+  U/shell: 96/96    315.6 s  (eta    0.0 s)
+    shell                sigma_r    22.35 m  sigma_d    3.52 m  bias_r    -2.33 m
+  U/met_message_error: 16/96     63.1 s  (eta  315.5 s)
+  U/met_message_error: 32/96    123.2 s  (eta  246.3 s)
+  U/met_message_error: 48/96    171.7 s  (eta  171.7 s)
+  U/met_message_error: 64/96    224.0 s  (eta  112.0 s)
+  U/met_message_error: 80/96    287.0 s  (eta   57.4 s)
+  U/met_message_error: 96/96    343.8 s  (eta    0.0 s)
+    met_message_error    sigma_r   170.69 m  sigma_d   73.87 m  bias_r     7.60 m
+  U/met_wind: 16/96     71.5 s  (eta  357.6 s)
+  U/met_wind: 32/96    129.4 s  (eta  258.7 s)
+  U/met_wind: 48/96    184.6 s  (eta  184.6 s)
+  U/met_wind: 64/96    234.9 s  (eta  117.5 s)
+  U/met_wind: 80/96    284.5 s  (eta   56.9 s)
+  U/met_wind: 96/96    325.8 s  (eta    0.0 s)
+    met_wind             sigma_r   153.86 m  sigma_d   73.91 m  bias_r     8.31 m
+  U/met_density: 16/96     49.4 s  (eta  247.2 s)
+  U/met_density: 32/96     98.5 s  (eta  196.9 s)
+  U/met_density: 48/96    148.6 s  (eta  148.6 s)
+  U/met_density: 64/96    197.1 s  (eta   98.5 s)
+  U/met_density: 80/96    244.5 s  (eta   48.9 s)
+  U/met_density: 96/96    289.0 s  (eta    0.0 s)
+    met_density          sigma_r    67.98 m  sigma_d    1.65 m  bias_r    -0.77 m
+  U/met_temperature: 16/96     49.7 s  (eta  248.5 s)
+  U/met_temperature: 32/96     98.9 s  (eta  197.7 s)
+  U/met_temperature: 48/96    146.9 s  (eta  146.9 s)
+  U/met_temperature: 64/96    196.7 s  (eta   98.3 s)
+  U/met_temperature: 80/96    247.4 s  (eta   49.5 s)
+  U/met_temperature: 96/96    292.2 s  (eta    0.0 s)
+    met_temperature      sigma_r    14.09 m  sigma_d    0.86 m  bias_r    -1.49 m
+  U/no_met_correction: 16/96     49.1 s  (eta  245.7 s)
+  U/no_met_correction: 32/96     98.1 s  (eta  196.3 s)
+  U/no_met_correction: 48/96    147.4 s  (eta  147.4 s)
+  U/no_met_correction: 64/96    197.1 s  (eta   98.5 s)
+  U/no_met_correction: 80/96    245.5 s  (eta   49.1 s)
+  U/no_met_correction: 96/96    290.5 s  (eta    0.0 s)
+    no_met_correction    sigma_r   219.00 m  sigma_d   90.71 m  bias_r    17.80 m
+  [U] modelled 173.5 m of 260.6 m range sigma (44.3 % of variance); residual to add 194.4 m
+wrote docs/monte_carlo.json
+using Task U inflation {'sigma_mv': 7.895001365960363, 'sigma_az': 0.0028636003179898753}
+total 2972.7 s
+using Task U inflation {'sigma_mv': 7.895001365960363, 'sigma_az': 0.0028636003179898753}
+[C] atmospheric knowledge, long, n=128, met x1.0, truth-fed
+  drew 128 rounds (22.3 s: a fire-control solution and a fuze setting each)
+  C/perfect: 16/128    114.4 s  (eta  800.5 s)
+  C/perfect: 32/128    250.2 s  (eta  750.5 s)
+using Task U inflation {'sigma_mv': 7.895001365960363, 'sigma_az': 0.0028636003179898753}
+[C] atmospheric knowledge, long, n=128, met x1.0, truth-fed
+  drew 128 rounds (22.5 s: a fire-control solution and a fuze setting each)
+  C/perfect: 16/128    126.5 s  (eta  885.2 s)
+  C/perfect: 32/128    252.9 s  (eta  758.8 s)
+  C/perfect: 48/128    378.5 s  (eta  630.9 s)
+  C/perfect: 64/128    498.9 s  (eta  498.9 s)
+  C/perfect: 80/128    624.7 s  (eta  374.8 s)
+  C/perfect: 96/128    750.8 s  (eta  250.3 s)
+  C/perfect: 112/128    880.6 s  (eta  125.8 s)
+  C/perfect: 128/128   1005.9 s  (eta    0.0 s)
+    perfect   CEP    1.71 m  sd_range   94.86  sd_defl  22.31  bias_range   -12.43
+  drew 128 rounds (22.6 s: a fire-control solution and a fuze setting each)
+  C/0h: 16/128    126.8 s  (eta  887.9 s)
+  C/0h: 32/128    251.9 s  (eta  755.7 s)
+  C/0h: 48/128    373.8 s  (eta  623.1 s)
+  C/0h: 64/128    500.0 s  (eta  500.0 s)
+  C/0h: 80/128    623.4 s  (eta  374.0 s)
+  C/0h: 96/128    742.5 s  (eta  247.5 s)
+  C/0h: 112/128    877.4 s  (eta  125.3 s)
+  C/0h: 128/128    987.1 s  (eta    0.0 s)
+    0h        CEP   12.95 m  sd_range  111.59  sd_defl  27.51  bias_range   -15.34
+  drew 128 rounds (23.7 s: a fire-control solution and a fuze setting each)
+  C/1h: 16/128    121.7 s  (eta  852.0 s)
+  C/1h: 32/128    238.6 s  (eta  715.8 s)
+  C/1h: 48/128    362.2 s  (eta  603.6 s)
+  C/1h: 64/128    486.9 s  (eta  486.9 s)
+  C/1h: 80/128    598.6 s  (eta  359.1 s)
+  C/1h: 96/128    707.3 s  (eta  235.8 s)
+  C/1h: 112/128    822.7 s  (eta  117.5 s)
+  C/1h: 128/128    921.7 s  (eta    0.0 s)
+    1h        CEP   56.39 m  sd_range  162.22  sd_defl  33.88  bias_range    -7.55
+  drew 128 rounds (22.7 s: a fire-control solution and a fuze setting each)
+  C/2h: 16/128    113.0 s  (eta  791.0 s)
+  C/2h: 32/128    236.3 s  (eta  708.9 s)
+  C/2h: 48/128    356.3 s  (eta  593.9 s)
+  C/2h: 64/128    476.5 s  (eta  476.5 s)
+  C/2h: 80/128    630.0 s  (eta  378.0 s)
+  C/2h: 96/128    810.5 s  (eta  270.2 s)
+  C/2h: 112/128    999.5 s  (eta  142.8 s)
+  C/2h: 128/128   1169.0 s  (eta    0.0 s)
+    2h        CEP   88.00 m  sd_range  189.79  sd_defl  41.69  bias_range    -4.64
+  drew 128 rounds (55.8 s: a fire-control solution and a fuze setting each)
+  C/3h: 16/128    187.8 s  (eta 1314.8 s)
+  C/3h: 32/128    368.1 s  (eta 1104.2 s)
+  C/3h: 48/128   1249.7 s  (eta 2082.9 s)
+  C/3h: 64/128   1435.0 s  (eta 1435.0 s)
+  C/3h: 80/128   1608.4 s  (eta  965.0 s)
+  C/3h: 96/128   1788.9 s  (eta  596.3 s)
+  C/3h: 112/128   1969.3 s  (eta  281.3 s)
+  C/3h: 128/128   2137.2 s  (eta    0.0 s)
+    3h        CEP   98.71 m  sd_range  211.39  sd_defl  47.40  bias_range     0.13
+  drew 128 rounds (56.1 s: a fire-control solution and a fuze setting each)
+  C/6h: 16/128    184.9 s  (eta 1294.6 s)
+  C/6h: 32/128    362.1 s  (eta 1086.4 s)
+  C/6h: 48/128    548.9 s  (eta  914.9 s)
+  C/6h: 64/128    738.2 s  (eta  738.2 s)
+  C/6h: 80/128    910.5 s  (eta  546.3 s)
+  C/6h: 96/128   1090.4 s  (eta  363.5 s)
+  C/6h: 112/128   1272.2 s  (eta  181.7 s)
+  C/6h: 128/128   1443.5 s  (eta    0.0 s)
+    6h        CEP  126.97 m  sd_range  249.85  sd_defl  61.25  bias_range     7.89
+  drew 128 rounds (0.2 s: a fire-control solution and a fuze setting each)
+  C/none: 16/128    183.9 s  (eta 1287.3 s)
+  C/none: 32/128    359.4 s  (eta 1078.2 s)
+  C/none: 48/128    538.9 s  (eta  898.1 s)
+  C/none: 64/128    723.9 s  (eta  723.9 s)
+  C/none: 80/128    900.2 s  (eta  540.1 s)
+  C/none: 96/128   1075.6 s  (eta  358.5 s)
+  C/none: 112/128   1259.7 s  (eta  180.0 s)
+  C/none: 128/128   1427.4 s  (eta    0.0 s)
+    none      CEP  118.23 m  sd_range  209.20  sd_defl  55.92  bias_range     3.46
+    -> 0h        knowledge term  1 sigma range   48.66 m  deflection  15.03 m
+    -> 1h        knowledge term  1 sigma range  115.07 m  deflection  27.52 m
+    -> 2h        knowledge term  1 sigma range  148.04 m  deflection  36.81 m
+    -> 3h        knowledge term  1 sigma range  173.70 m  deflection  43.09 m
+    -> 6h        knowledge term  1 sigma range  217.46 m  deflection  57.70 m
+    -> none      knowledge term  1 sigma range  188.52 m  deflection  51.46 m
+wrote docs/monte_carlo.json
+total 9296.7 s
+using Task U inflation {'sigma_mv': 7.895001365960363, 'sigma_az': 0.0028636003179898753}
+[D] monitor re-derivation, long, n=96, navigation IN the loop; the setting in force is fraction 0.30, floor 32.31 m, start 6.40 s
+  drew 96 rounds (42.9 s: a fire-control solution and a fuze setting each)
+  D/shadow/full: 16/96    298.3 s  (eta 1491.6 s)
+  D/shadow/full: 32/96    584.7 s  (eta 1169.4 s)
+  D/shadow/full: 48/96    881.4 s  (eta  881.4 s)
+  D/shadow/full: 64/96   1171.1 s  (eta  585.6 s)
+  D/shadow/full: 80/96   1445.7 s  (eta  289.1 s)
+  D/shadow/full: 96/96   1710.6 s  (eta    0.0 s)
+    full         96 rounds, 5.0 monitor windows each
+  D/shadow/stage2_fail: 16/96    307.6 s  (eta 1538.0 s)
+  D/shadow/stage2_fail: 32/96    554.9 s  (eta 1109.8 s)
+  D/shadow/stage2_fail: 48/96    803.4 s  (eta  803.4 s)
+  D/shadow/stage2_fail: 64/96   1046.2 s  (eta  523.1 s)
+  D/shadow/stage2_fail: 80/96   1307.6 s  (eta  261.5 s)
+  D/shadow/stage2_fail: 96/96   1534.2 s  (eta    0.0 s)
+    stage2_fail  96 rounds, 5.0 monitor windows each
+    trade curve at the adopted floor (32.3 m):
+      fraction   FA %   detect %   median delay s
+    confirming 2 operating points: [(0.3, 32.307, 'the setting in force since step 3'), (0.05, 80.0, 'best detection at FA <= 2 %')]
+  D/f0.3_floor32.307/full: 16/96    249.2 s  (eta 1246.0 s)
+  D/f0.3_floor32.307/full: 32/96  17498.5 s  (eta 34997.0 s)
+  D/f0.3_floor32.307/full: 48/96  17764.0 s  (eta 17764.0 s)
+  D/f0.3_floor32.307/full: 64/96  17949.5 s  (eta 8974.8 s)
+  D/f0.3_floor32.307/full: 80/96  18126.7 s  (eta 3625.3 s)
+  D/f0.3_floor32.307/full: 96/96  18313.2 s  (eta    0.0 s)
+  D/f0.3_floor32.307/stage2_fail: 16/96    219.8 s  (eta 1098.9 s)
+  D/f0.3_floor32.307/stage2_fail: 32/96    403.0 s  (eta  805.9 s)
+  D/f0.3_floor32.307/stage2_fail: 48/96    582.4 s  (eta  582.4 s)
+  D/f0.3_floor32.307/stage2_fail: 64/96    765.7 s  (eta  382.9 s)
+  D/f0.3_floor32.307/stage2_fail: 80/96    935.9 s  (eta  187.2 s)
+  D/f0.3_floor32.307/stage2_fail: 96/96   1107.4 s  (eta    0.0 s)
+    confirm f0.3_floor32.307: healthy CEP 100.66 m, FA 36.5 %, detect 64.6 %
+  D/f0.05_floor80/full: 16/96    193.9 s  (eta  969.3 s)
+  D/f0.05_floor80/full: 32/96    382.9 s  (eta  765.8 s)
+  D/f0.05_floor80/full: 48/96    589.4 s  (eta  589.4 s)
+  D/f0.05_floor80/full: 64/96    796.7 s  (eta  398.3 s)
+  D/f0.05_floor80/full: 80/96    986.4 s  (eta  197.3 s)
+  D/f0.05_floor80/full: 96/96   1163.9 s  (eta    0.0 s)
+  D/f0.05_floor80/stage2_fail: 16/96    201.0 s  (eta 1005.1 s)
+  D/f0.05_floor80/stage2_fail: 32/96    400.6 s  (eta  801.2 s)
+  D/f0.05_floor80/stage2_fail: 48/96    614.8 s  (eta  614.8 s)
+  D/f0.05_floor80/stage2_fail: 64/96    845.4 s  (eta  422.7 s)
+  D/f0.05_floor80/stage2_fail: 80/96   1066.0 s  (eta  213.2 s)
+  D/f0.05_floor80/stage2_fail: 96/96   1250.2 s  (eta    0.0 s)
+    confirm f0.05_floor80: healthy CEP 88.72 m, FA 1.0 %, detect 2.1 %
+wrote docs/monte_carlo.json
+total 25124.1 s
+STAGE A COMPLETE

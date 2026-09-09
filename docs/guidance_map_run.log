@@ -1,0 +1,88 @@
+
+=== short: charge 4, QE 97.2 mils ===
+  uncorrected 2011.7 m, tof 6.38 s (FT 2000 m, 6.4 s)
+  deploy at 0.800 s, M 0.969, qbar 66.4 kPa; guided phase 5.57 s
+  short hold: 16/104    17.5 s
+  short hold: 32/104    34.4 s
+  short hold: 48/104    53.7 s
+  short hold: 64/104    74.9 s
+  short hold: 80/104    99.2 s
+  short hold: 96/104   116.6 s
+  short hold: 104/104   124.6 s
+  short ideal: 8/8     9.0 s
+  full hold: semi-major 3.2 m, semi-minor 0.3 m, ratio 9.22, residual 0.026
+  ideal    : semi-major 22.7 m, retained 14.0 %
+  wrote docs/guidance_map.json (140.8 s elapsed)
+
+=== short2: charge 4, QE 211.6 mils ===
+  uncorrected 4013.6 m, tof 13.52 s (FT 4000 m, 13.5 s)
+  deploy at 1.650 s, M 0.947, qbar 62.8 kPa; guided phase 11.84 s
+  short2 hold: 16/136    40.5 s
+  short2 hold: 32/136    79.5 s
+  short2 hold: 48/136   113.8 s
+  short2 hold: 64/136   147.7 s
+  short2 hold: 80/136   181.4 s
+  short2 hold: 96/136   215.3 s
+  short2 hold: 112/136   252.8 s
+  short2 hold: 128/136   285.0 s
+  short2 hold: 136/136   299.6 s
+  short2 ideal: 8/8    15.6 s
+  full hold: semi-major 12.2 m, semi-minor 2.9 m, ratio 4.20, residual 0.011
+  ideal    : semi-major 28.2 m, retained 43.4 %
+  wrote docs/guidance_map.json (471.1 s elapsed)
+
+=== middle: charge 6, QE 378.6 mils ===
+  uncorrected 9007.7 m, tof 28.89 s (FT 9000 m, 28.9 s)
+  deploy at 3.450 s, M 1.186, qbar 94.1 kPa; guided phase 25.33 s
+  middle hold: 16/152    74.5 s
+  middle hold: 32/152   161.4 s
+  middle hold: 48/152   230.9 s
+  middle hold: 64/152   302.3 s
+  middle hold: 80/152   394.6 s
+  middle hold: 96/152   473.2 s
+  middle hold: 112/152   544.4 s
+  middle hold: 128/152   623.8 s
+  middle hold: 144/152   695.9 s
+  middle hold: 152/152   731.4 s
+  middle ideal: 8/8    31.8 s
+  full hold: semi-major 68.9 m, semi-minor 36.4 m, ratio 1.89, residual 0.020
+  ideal    : semi-major 108.8 m, retained 61.4 %
+  wrote docs/guidance_map.json (1258.2 s elapsed)
+
+=== mid2: charge 7, QE 520.7 mils ===
+  uncorrected 12971.2 m, tof 42.56 s (FT 13000 m, 42.6 s)
+  deploy at 4.950 s, M 1.310, qbar 106.4 kPa; guided phase 37.42 s
+  mid2 hold: 16/160   128.8 s
+  mid2 hold: 32/160   291.2 s
+  mid2 hold: 48/160   438.0 s
+  mid2 hold: 64/160   576.9 s
+  mid2 hold: 80/160   727.0 s
+  mid2 hold: 96/160   869.7 s
+  mid2 hold: 112/160  1018.9 s
+  mid2 hold: 128/160  1172.2 s
+  mid2 hold: 144/160  1335.7 s
+  mid2 hold: 160/160  1476.8 s
+  mid2 ideal: 8/8    66.8 s
+  full hold: semi-major 98.4 m, semi-minor 86.9 m, ratio 1.13, residual 0.021
+  ideal    : semi-major 146.6 m, retained 64.8 %
+  wrote docs/guidance_map.json (2836.6 s elapsed)
+
+=== long: charge 8, QE 525.3 mils ===
+  uncorrected 15839.5 m, tof 48.48 s (FT 16000 m, 48.9 s)
+  deploy at 5.550 s, M 1.521, qbar 136.9 kPa; guided phase 42.69 s
+  long hold: 16/160   175.4 s
+  long hold: 32/160   334.1 s
+  long hold: 48/160   490.3 s
+  long hold: 64/160   626.8 s
+  long hold: 80/160   725.7 s
+  long hold: 96/160   823.0 s
+  long hold: 112/160   917.9 s
+  long hold: 128/160  1015.1 s
+  long hold: 144/160  1115.1 s
+  long hold: 160/160  1209.0 s
+  long ideal: 8/8    42.6 s
+  full hold: semi-major 184.0 m, semi-minor 166.8 m, ratio 1.10, residual 0.020
+  ideal    : semi-major 260.3 m, retained 73.2 %
+  wrote docs/guidance_map.json (4152.8 s elapsed)
+
+wrote docs/guidance_map.json  (4152.9 s)

@@ -1,0 +1,168 @@
+
+=== TASK C: schedulers, against a dispersion the kit cannot cover ===
+  C proportional: 24/64    178.8 s
+  C proportional: 48/64    373.2 s
+  C proportional: 64/64    477.7 s
+    proportional   CEP    36.3 m   P(<=30 m)  46.9 %
+  C deadband: 24/64    170.6 s
+  C deadband: 48/64    396.4 s
+  C deadband: 64/64    499.0 s
+    deadband       CEP    39.4 m   P(<=30 m)  43.8 %
+  C budget: 24/64    206.2 s
+  C budget: 48/64    410.3 s
+  C budget: 64/64    569.3 s
+    budget         CEP    36.3 m   P(<=30 m)  46.9 %
+  C single_shot: 24/64    219.1 s
+  C single_shot: 48/64    430.1 s
+  C single_shot: 64/64    597.8 s
+    single_shot    CEP    47.9 m   P(<=30 m)  17.2 %
+  C isotropic: 24/64    213.1 s
+  C isotropic: 48/64    412.1 s
+  C isotropic: 64/64    543.9 s
+    isotropic      CEP    43.0 m   P(<=30 m)  42.2 %
+    rounds that never released: 100 %
+    deadband       vs proportional: paired median    +0.2 +/- 0.4 m, worse on 59 % of rounds
+    budget         vs proportional: paired median    +0.0 +/- 0.0 m, worse on 12 % of rounds
+    single_shot    vs proportional: paired median   +13.0 +/- 2.9 m, worse on 98 % of rounds
+    isotropic      vs proportional: paired median    +1.7 +/- 0.6 m, worse on 84 % of rounds
+  wrote docs/guidance_cep.json (2690.0 s elapsed)
+
+=== TASK C.2: schedulers, against a dispersion the kit CAN cover ===
+  C proportional: 24/48    245.9 s
+  C proportional: 48/48    508.3 s
+    proportional   CEP     0.4 m   P(<=30 m)  79.2 %
+  C deadband: 24/48   4640.4 s
+  C deadband: 48/48   4843.9 s
+    deadband       CEP    17.8 m   P(<=30 m)  79.2 %
+  C budget: 24/48    212.3 s
+  C budget: 48/48    416.6 s
+    budget         CEP     0.4 m   P(<=30 m)  79.2 %
+  C single_shot: 24/48    203.9 s
+  C single_shot: 48/48    404.0 s
+    single_shot    CEP    36.3 m   P(<=30 m)  20.8 %
+  C isotropic: 24/48    210.1 s
+  C isotropic: 48/48    438.9 s
+    isotropic      CEP     1.4 m   P(<=30 m)  70.8 %
+    rounds that never released: 100 %
+    proportional   vs budget: paired median    +0.0 +/- 0.0 m, worse on 27 % of rounds
+    deadband       vs budget: paired median    +8.8 +/- 1.6 m, worse on 85 % of rounds
+    single_shot    vs budget: paired median   +31.0 +/- 3.0 m, worse on 96 % of rounds
+    isotropic      vs budget: paired median    +1.0 +/- 0.3 m, worse on 79 % of rounds
+  wrote docs/guidance_cep.json (9304.8 s elapsed)
+  best by measured CEP: proportional
+
+=== TASK D: aim-off ===
+  D aim-off 0 m: 24/64    213.7 s
+  D aim-off 0 m: 48/64    434.0 s
+  D aim-off 0 m: 64/64    570.3 s
+    aim-off    0.0 m  CEP    76.3 m
+  D aim-off 100 m: 24/64    273.7 s
+  D aim-off 100 m: 48/64    481.2 s
+  D aim-off 100 m: 64/64    628.5 s
+    aim-off  100.0 m  CEP    44.6 m
+  D aim-off 175 m: 24/64    225.6 s
+  D aim-off 175 m: 48/64    458.4 s
+  D aim-off 175 m: 64/64    603.5 s
+    aim-off  175.0 m  CEP    31.2 m
+  D aim-off 224 m: 24/64    226.4 s
+  D aim-off 224 m: 48/64    463.5 s
+  D aim-off 224 m: 64/64    597.5 s
+    aim-off  224.0 m  CEP    37.0 m
+  D aim-off 275 m: 24/64    211.8 s
+  D aim-off 275 m: 48/64    418.9 s
+  D aim-off 275 m: 64/64    554.8 s
+    aim-off  275.0 m  CEP    44.4 m
+  D aim-off 350 m: 24/64    196.0 s
+  D aim-off 350 m: 48/64    356.9 s
+  D aim-off 350 m: 64/64    470.4 s
+    aim-off  350.0 m  CEP    51.5 m
+  D 2-D aim-off (-16.7 m): 24/64    211.6 s
+  D 2-D aim-off (-16.7 m): 48/64    426.8 s
+  D 2-D aim-off (-16.7 m): 64/64    574.6 s
+    2-D aim-off (175.0 m, -16.7 m)  CEP    41.3 m
+  wrote docs/guidance_cep.json (13309.1 s elapsed)
+
+=== TASK E: degradation ladder ===
+    full                     CEP    36.3 m  P(<=30 m)  46.9 %  monitor fired 0/64
+  E degraded_25pc: 24/64    267.2 s
+  E degraded_25pc: 48/64    479.8 s
+  E degraded_25pc: 64/64    584.9 s
+    degraded_25pc            CEP    59.1 m  P(<=30 m)  18.8 %  monitor fired 0/64
+  E degraded_60pc: 24/64    162.3 s
+  E degraded_60pc: 48/64    321.4 s
+  E degraded_60pc: 64/64    428.2 s
+    degraded_60pc            CEP    36.3 m  P(<=30 m)  48.4 %  monitor fired 0/64
+  E reversionary: 24/64    157.8 s
+  E reversionary: 48/64    311.1 s
+  E reversionary: 64/64    411.8 s
+    reversionary             CEP   212.2 m  P(<=30 m)   1.6 %  monitor fired 0/64
+  E inhibit: 24/64    168.6 s
+  E inhibit: 48/64    340.0 s
+  E inhibit: 64/64    453.1 s
+    inhibit                  CEP    36.3 m  P(<=30 m)  46.9 %  monitor fired 0/64
+  E stage2_fail: 24/64    162.4 s
+  E stage2_fail: 48/64    329.2 s
+  E stage2_fail: 64/64    429.7 s
+    stage2_fail              CEP   216.0 m  P(<=30 m)   1.6 %  monitor fired 44/64
+    stage-2 fault detected in 44/64 rounds
+  E stage2_fail, monitor off: 24/64    171.9 s
+  E stage2_fail, monitor off: 48/64    333.1 s
+  E stage2_fail, monitor off: 64/64    440.0 s
+  wrote docs/guidance_cep.json (16061.4 s elapsed)
+
+=== TASK F: the firing table ===
+  F short: 24/64     20.0 s
+  F short: 48/64     40.5 s
+  F short: 64/64     53.7 s
+  F short unguided: 24/32     20.3 s
+  F short unguided: 32/32     27.0 s
+    short    CEP    24.2 m against unguided    23.9 m
+  F short2: 24/64     47.1 s
+  F short2: 48/64     92.7 s
+  F short2: 64/64    120.0 s
+  F short2 unguided: 24/32     43.8 s
+  F short2 unguided: 32/32     57.8 s
+    short2   CEP    41.7 m against unguided    50.7 m
+  F middle: 24/64   1052.6 s
+  F middle: 48/64   1156.1 s
+  F middle: 64/64   1217.7 s
+  F middle unguided: 24/32     88.2 s
+  F middle unguided: 32/32    117.4 s
+    middle   CEP    61.2 m against unguided   119.8 m
+  F mid2: 24/64    139.7 s
+  F mid2: 48/64    282.5 s
+  F mid2: 64/64    375.7 s
+  F mid2 unguided: 24/32    135.9 s
+  F mid2 unguided: 32/32    176.7 s
+    mid2     CEP    64.5 m against unguided   170.3 m
+  F long: 24/64    164.3 s
+  F long: 48/64    325.5 s
+  F long: 64/64    432.3 s
+  F long unguided: 24/32    149.9 s
+  F long unguided: 32/32    197.7 s
+    long     CEP    36.3 m against unguided   212.4 m
+  wrote docs/guidance_cep.json (18843.9 s elapsed)
+
+=== TASK C.3: guidance rate, paired ===
+  R 1.0 Hz: 24/32    161.0 s
+  R 1.0 Hz: 32/32    210.5 s
+     1.0 Hz  CEP    28.0 m
+  R 0.5 Hz: 24/32    354.5 s
+  R 0.5 Hz: 32/32    404.4 s
+      0.5 Hz  CEP    32.5 m  paired  -0.03 +/- 0.09 m  worse on 44 %
+  R 2.0 Hz: 24/32    165.0 s
+  R 2.0 Hz: 32/32    216.8 s
+      2.0 Hz  CEP    29.0 m  paired  +0.08 +/- 0.37 m  worse on 56 %
+  R 5.0 Hz: 24/32    181.6 s
+  R 5.0 Hz: 32/32    241.3 s
+      5.0 Hz  CEP    24.2 m  paired  +1.63 +/- 0.77 m  worse on 69 %
+  wrote docs/guidance_cep.json (19918.2 s elapsed)
+
+=== TASK G: containment ===
+  G circular: 24/64    163.8 s
+  G circular: 48/64    323.7 s
+  G circular: 64/64    424.7 s
+    circular dispersion CEP 35.3 m
+  wrote docs/guidance_cep.json (20360.6 s elapsed)
+
+wrote docs/guidance_cep.json  (20360.9 s)

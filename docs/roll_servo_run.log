@@ -1,0 +1,76 @@
+flying the baseline legs ...
+  uncorrected  range 15839.5 m  drift 330.9 m  tof 48.48 s
+  deployment   t = 5.550 s  M 1.521  qbar 136.9 kPa  spin 1308 rad/s
+  free nose    range 15612.9 m  bias -226.6 m
+Yawing modes the duty cycle has to avoid ...
+  slow (precession) mode 0.40-1.13 Hz, median 0.49 Hz
+  fast (nutation)  mode 17.93-22.62 Hz, median 20.60 Hz
+Task A: the one-sided actuator envelope ...
+  brake 0.50 N m: hold possible over 95.3 % of the guided phase, dead window 1.9999999999988916 s, max forward 7555 deg/s, max return -4886 deg/s
+  brake 0.75 N m: hold possible over 100.0 % of the guided phase, dead window 0.0 s, max forward 12179 deg/s, max return -4886 deg/s
+Task C: slew, settling, tracking error and bandwidth ...
+  nominal_brake: 36/52 steps settled
+  sized_brake: 52/52 steps settled
+Task C: acquisition from deployment ...
+  nominal_brake: acquired 12/12, median 3.471999999999891 s, max 3.6140000000000647 s
+  sized_brake: acquired 12/12, median 1.8749999999989608 s, max 1.9939999999988949 s
+Task C: what a faster brake coil would buy ...
+  tau   0.0 ms -> bandwidth 3.4769601583308294 Hz
+  tau   3.0 ms -> bandwidth 3.6133228380798004 Hz
+  tau   5.0 ms -> bandwidth 3.010862068453515 Hz
+  tau  10.0 ms -> bandwidth 1.5167773776540705 Hz
+  tau  20.0 ms -> bandwidth 0.7662882797727585 Hz
+  tau  40.0 ms -> bandwidth 0.37297560059968304 Hz
+Task A verification and Task C verification in the 6-DOF ...
+Task D: duty-cycle cases ...
+  closed-form rate limits agree with the 6-DOF to 6.16 rad/s absolute, 5.09 % relative where the rate exceeds 20 rad/s
+  verify_hold_180: reduced vs 6-DOF roll angle, rms 0.6068 deg settled, max 8.7889 deg
+  verify_step_p90: reduced vs 6-DOF roll angle, rms 0.5830 deg settled, max 8.7889 deg
+  verify_step_m90: reduced vs 6-DOF roll angle, rms 0.5883 deg settled, max 8.7889 deg
+  verify_hold_180_nominal_brake: reduced vs 6-DOF roll angle, rms 0.7744 deg settled, max 13.3165 deg
+  servo_cost: ideal semi-major 260.3 m, closed 246.1 m (94.5 % semi-major, 81.1 % rms), axis ratio 2.00 against ideal 1.20, peak AoA 6.90 deg against ideal 2.64 deg
+  servo_cost_ungated: ideal semi-major 260.3 m, closed 224.9 m (86.4 % semi-major, 69.6 % rms), axis ratio 3.15 against ideal 1.20, peak AoA 6.23 deg against ideal 2.64 deg
+engagement phase sensitivity ...
+  dwell 0.00 s (engage 1.162): semi-major 246.1 m (94.5 %), rms 81.1 %, axis ratio 2.00, peak AoA 6.90 deg
+  dwell 0.04 s (engage 1.204): semi-major 261.4 m (100.4 %), rms 97.0 %, axis ratio 1.31, peak AoA 6.26 deg
+  dwell 0.08 s (engage 1.244): semi-major 243.5 m (93.5 %), rms 84.6 %, axis ratio 1.61, peak AoA 6.21 deg
+  dwell 0.12 s (engage 1.284): semi-major 203.3 m (78.1 %), rms 61.4 %, axis ratio 4.52, peak AoA 6.67 deg
+  dwell 0.16 s (engage 1.324): semi-major 209.6 m (80.5 %), rms 71.3 %, axis ratio 1.74, peak AoA 5.05 deg
+  over the ensemble: rms retained 61.4-97.0 %, median 81.1 %
+step-size convergence of the smallest quanta ...
+  coarse against fine step: worst difference 5.498 m
+    start 12.0 len 0.50: 5.339 m
+    start 12.0 len 2.00: 5.498 m
+    start 22.0 len 2.00: 0.186 m
+    start 32.0 len 4.00: 0.089 m
+  duty_180_T1.0_D0.25: 43 arcs, median reacquire 0.21400000000102182 s, overhead 97.1 %
+  duty_180_T1.0_D0.5: 43 arcs, median reacquire 0.31199999999927286 s, overhead 90.3 %
+  duty_180_T1.0_D0.75: 43 arcs, median reacquire 0.5720000000027312 s, overhead 82.0 %
+  duty_180_T2.0_D0.25: 22 arcs, median reacquire 0.4860000000023206 s, overhead 96.0 %
+  duty_180_T2.0_D0.5: 22 arcs, median reacquire 0.6889999999983942 s, overhead 64.8 %
+  duty_180_T2.0_D0.75: 22 arcs, median reacquire 0.601999999999137 s, overhead 45.1 %
+  duty_180_T4.0_D0.25: 11 arcs, median reacquire 0.5479999999987228 s, overhead 56.0 %
+  duty_180_T4.0_D0.5: 11 arcs, median reacquire 0.4180000000011077 s, overhead 30.6 %
+  duty_180_T4.0_D0.75: 11 arcs, median reacquire 0.7019999999983639 s, overhead 24.5 %
+  duty_180_T8.0_D0.25: 6 arcs, median reacquire 0.7360000000035143 s, overhead 47.0 %
+  duty_180_T8.0_D0.5: 6 arcs, median reacquire 0.6950000000033185 s, overhead 22.5 %
+  duty_180_T8.0_D0.75: 6 arcs, median reacquire 0.6400000000005548 s, overhead 16.2 %
+  duty_180_T16.0_D0.25: 3 arcs, median reacquire 0.6900000000032946 s, overhead 26.7 %
+  duty_180_T16.0_D0.5: 3 arcs, median reacquire 0.7320000000034952 s, overhead 13.0 %
+  duty_180_T16.0_D0.75: 3 arcs, median reacquire 0.7420000000035429 s, overhead 9.7 %
+  duty_180_T1.0_D0.25: peak yaw rate at 0.02331002330999482 Hz, peak AoA 6.53 deg
+  duty_180_T1.0_D0.5: peak yaw rate at 0.02347417840372718 Hz, peak AoA 8.13 deg
+  duty_180_T1.0_D0.75: peak yaw rate at 0.023282887077969217 Hz, peak AoA 11.65 deg
+  duty_180_T2.0_D0.25: peak yaw rate at 0.37296037295991713 Hz, peak AoA 4.11 deg
+  duty_180_T2.0_D0.5: peak yaw rate at 9.544924154014005 Hz, peak AoA 6.13 deg
+  duty_180_T2.0_D0.75: peak yaw rate at 9.468713105065168 Hz, peak AoA 8.13 deg
+  duty_180_T4.0_D0.25: peak yaw rate at 9.324009323997927 Hz, peak AoA 4.09 deg
+  duty_180_T4.0_D0.5: peak yaw rate at 6.6898954703751 Hz, peak AoA 4.90 deg
+  duty_180_T4.0_D0.75: peak yaw rate at 9.999999999987779 Hz, peak AoA 4.55 deg
+  duty_180_T8.0_D0.25: peak yaw rate at 5.344224037333025 Hz, peak AoA 4.55 deg
+  duty_180_T8.0_D0.5: peak yaw rate at 3.4762456546886833 Hz, peak AoA 4.55 deg
+  duty_180_T8.0_D0.75: peak yaw rate at 0.023094688221680783 Hz, peak AoA 4.55 deg
+  duty_180_T16.0_D0.25: peak yaw rate at 0.02325581395345995 Hz, peak AoA 4.55 deg
+  duty_180_T16.0_D0.5: peak yaw rate at 7.4913294797596315 Hz, peak AoA 4.55 deg
+  duty_180_T16.0_D0.75: peak yaw rate at 7.741935483861505 Hz, peak AoA 4.55 deg
+wrote docs/roll_servo.json in 1358.6 s

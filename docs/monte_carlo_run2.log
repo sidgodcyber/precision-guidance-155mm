@@ -1,0 +1,325 @@
+using Task U inflation {'sigma_mv': 7.895001365960363, 'sigma_az': 0.0028636003179898753}
+keep-awake: system sleep suppressed for this process
+[A:headline] headline, long, n=192
+  drew 192 rounds (36.5 s: a fire-control solution and a fuze setting each)
+  A/headline/long: 16/192    201.0 s  (eta 2211.5 s)
+  A/headline/long: 32/192    431.5 s  (eta 2157.5 s)
+  A/headline/long: 48/192    637.6 s  (eta 1912.8 s)
+  A/headline/long: 64/192    850.2 s  (eta 1700.5 s)
+  A/headline/long: 80/192   1027.4 s  (eta 1438.4 s)
+  A/headline/long: 96/192   1214.8 s  (eta 1214.8 s)
+  A/headline/long: 112/192   1428.3 s  (eta 1020.2 s)
+  A/headline/long: 128/192   1635.0 s  (eta  817.5 s)
+  A/headline/long: 144/192   1827.3 s  (eta  609.1 s)
+  A/headline/long: 160/192   2052.4 s  (eta  410.5 s)
+  A/headline/long: 176/192   2258.1 s  (eta  205.3 s)
+  A/headline/long: 192/192   2465.4 s  (eta    0.0 s)
+  A/headline/long/unguided: 16/192     66.4 s  (eta  730.9 s)
+  A/headline/long/unguided: 32/192    125.1 s  (eta  625.6 s)
+  A/headline/long/unguided: 48/192    187.0 s  (eta  560.9 s)
+  A/headline/long/unguided: 64/192    245.9 s  (eta  491.9 s)
+  A/headline/long/unguided: 80/192    304.8 s  (eta  426.7 s)
+  A/headline/long/unguided: 96/192    362.4 s  (eta  362.4 s)
+  A/headline/long/unguided: 112/192    422.6 s  (eta  301.9 s)
+  A/headline/long/unguided: 128/192    476.7 s  (eta  238.4 s)
+  A/headline/long/unguided: 144/192    533.0 s  (eta  177.7 s)
+  A/headline/long/unguided: 160/192    593.8 s  (eta  118.8 s)
+  A/headline/long/unguided: 176/192    654.1 s  (eta   59.5 s)
+  A/headline/long/unguided: 192/192    703.7 s  (eta    0.0 s)
+  [A:headline] CEP 106.19 m [91.54, 130.13] at n=192; unguided 205.7 m; 21.9 % within 30 m
+  [A:headline] convergence: {'converged': True, 'stable_at_n': 16, 'final_n': 192, 'final_cep_m': 106.18741604359045, 'final_ci_m': [91.54485903397315, 130.12927062097194], 'half_width_m': 19.29220579349939, 'half_width_pct': 18.168071615547976}
+wrote docs/monte_carlo.json
+total 3206.6 s
+using Task U inflation {'sigma_mv': 7.895001365960363, 'sigma_az': 0.0028636003179898753}
+keep-awake: system sleep suppressed for this process
+[N] navigation contribution, long, n=96, truth-fed pair
+  drew 96 rounds (24.2 s: a fire-control solution and a fuze setting each)
+    navigation-fed: reusing 96 rounds
+  N/truth: 16/96    121.9 s  (eta  609.4 s)
+  N/truth: 32/96    252.3 s  (eta  504.6 s)
+  N/truth: 48/96    386.5 s  (eta  386.5 s)
+  N/truth: 64/96    522.5 s  (eta  261.2 s)
+  N/truth: 80/96    655.5 s  (eta  131.1 s)
+  N/truth: 96/96    794.4 s  (eta    0.0 s)
+    CEP 94.80 m truth-fed -> 100.66 m with navigation (paired +5.86 m [-18.57, +26.43])
+    range contribution 1 sigma  53.08 m [43.31, 61.85], bias -22.55 m
+    defl  contribution 1 sigma  20.69 m [15.96, 24.89], bias -2.51 m
+wrote docs/monte_carlo.json
+total 819.9 s
+using Task U inflation {'sigma_mv': 7.895001365960363, 'sigma_az': 0.0028636003179898753}
+keep-awake: system sleep suppressed for this process
+[E] staged vs single stage, long, n=96, paired
+  drew 96 rounds (25.6 s: a fire-control solution and a fuze setting each)
+    staged: reusing 96 rounds already flown for the headline campaign
+    staged        CEP  100.66 [ 80.47, 112.77]  p90  335.76  max   625.24  kurt  1.77
+  E/single_stage: 16/96    202.6 s  (eta 1013.2 s)
+  E/single_stage: 32/96    409.4 s  (eta  818.9 s)
+  E/single_stage: 48/96    619.6 s  (eta  619.6 s)
+  E/single_stage: 64/96    830.8 s  (eta  415.4 s)
+  E/single_stage: 80/96   1013.9 s  (eta  202.8 s)
+  E/single_stage: 96/96   1192.1 s  (eta    0.0 s)
+    single_stage  CEP  121.86 [ 93.39, 149.63]  p90  418.01  max   726.37  kurt  1.30
+    single minus staged: +21.20 m [-1.52, +47.87] (single worse on 64 % of rounds)
+wrote docs/monte_carlo.json
+total 1219.5 s
+using Task U inflation {'sigma_mv': 7.895001365960363, 'sigma_az': 0.0028636003179898753}
+keep-awake: system sleep suppressed for this process
+[G] cheap levers re-measured, long, n=96, one sensor seed per round
+  drew 96 rounds (18.4 s: a fire-control solution and a fuze setting each)
+    baseline: reusing 96 rounds
+  G/antenna_on_axis: 16/96    201.2 s  (eta 1006.2 s)
+  G/antenna_on_axis: 32/96    390.7 s  (eta  781.4 s)
+  G/antenna_on_axis: 48/96    579.4 s  (eta  579.4 s)
+  G/antenna_on_axis: 64/96    771.0 s  (eta  385.5 s)
+  G/antenna_on_axis: 80/96    964.7 s  (eta  192.9 s)
+  G/antenna_on_axis: 96/96   1142.7 s  (eta    0.0 s)
+    antenna_on_axis    range 1s 197.06 -> 197.19  ( +0.13 [ -3.53,  +3.89])   defl  52.15 ->  48.85  ( -3.30 [ -5.57,  -1.17])
+  G/mag_floor_0.1pct: 16/96    194.7 s  (eta  973.3 s)
+  G/mag_floor_0.1pct: 32/96    378.1 s  (eta  756.1 s)
+  G/mag_floor_0.1pct: 48/96    564.5 s  (eta  564.5 s)
+  G/mag_floor_0.1pct: 64/96    755.5 s  (eta  377.7 s)
+  G/mag_floor_0.1pct: 80/96    951.2 s  (eta  190.2 s)
+  G/mag_floor_0.1pct: 96/96   1137.1 s  (eta    0.0 s)
+    mag_floor_0.1pct   range 1s 197.06 -> 194.77  ( -2.29 [ -8.54,  +3.13])   defl  52.15 ->  52.21  ( +0.06 [ -1.32,  +1.58])
+wrote docs/monte_carlo.json
+total 2299.6 s
+using Task U inflation {'sigma_mv': 7.895001365960363, 'sigma_az': 0.0028636003179898753}
+keep-awake: system sleep suppressed for this process
+[B] epistemic band, long, n=32
+  drew 32 rounds (6.1 s: a fire-control solution and a fuze setting each)
+    nominal: reusing 32 rounds already flown for the headline campaign
+    nominal              CEP  100.57 [ 58.29, 127.97]  within30  18.8 %
+  B/cla_low: 16/32    196.9 s  (eta  196.9 s)
+  B/cla_low: 32/32    369.2 s  (eta    0.0 s)
+    cla_low              CEP  119.47 [ 91.72, 163.29]  within30  12.5 %
+  B/cla_high: 16/32    194.5 s  (eta  194.5 s)
+  B/cla_high: 32/32    372.2 s  (eta    0.0 s)
+    cla_high             CEP   95.52 [ 42.21, 121.13]  within30  15.6 %
+  B/magnus_low: 16/32    188.8 s  (eta  188.8 s)
+  B/magnus_low: 32/32    362.9 s  (eta    0.0 s)
+    magnus_low           CEP  113.52 [ 80.75, 141.49]  within30  12.5 %
+  B/magnus_high: 16/32    190.3 s  (eta  190.3 s)
+  B/magnus_high: 32/32    366.6 s  (eta    0.0 s)
+    magnus_high          CEP   28.20 [ 12.73,  79.35]  within30  50.0 %
+  B/bearing_light: 16/32    201.1 s  (eta  201.1 s)
+  B/bearing_light: 32/32    375.9 s  (eta    0.0 s)
+    bearing_light        CEP   94.15 [ 58.06, 135.81]  within30  18.8 %
+  B/bearing_heavy: 16/32    195.9 s  (eta  195.9 s)
+  B/bearing_heavy: 32/32    387.6 s  (eta    0.0 s)
+    bearing_heavy        CEP   90.80 [ 49.69, 130.59]  within30  18.8 %
+  B/coil_slow: 16/32    195.5 s  (eta  195.5 s)
+  B/coil_slow: 32/32    373.4 s  (eta    0.0 s)
+    coil_slow            CEP  102.85 [ 50.59, 138.30]  within30  15.6 %
+  B/corner_favourable: 16/32    190.4 s  (eta  190.4 s)
+  B/corner_favourable: 32/32    369.2 s  (eta    0.0 s)
+    corner_favourable    CEP   94.46 [ 62.32, 138.46]  within30  18.8 %
+  B/corner_adverse: 16/32    189.3 s  (eta  189.3 s)
+  B/corner_adverse: 32/32    363.4 s  (eta    0.0 s)
+    corner_adverse       CEP  119.01 [105.21, 150.54]  within30   3.1 %
+  [B] CEP is 100.6 m and lies between 28.2 m (magnus_high) and 119.5 m (cla_low)
+wrote docs/monte_carlo.json
+total 3347.7 s
+using Task U inflation {'sigma_mv': 7.895001365960363, 'sigma_az': 0.0028636003179898753}
+keep-awake: system sleep suppressed for this process
+[A:fresh_met] headline, long, n=96
+  drew 96 rounds (16.7 s: a fire-control solution and a fuze setting each)
+  A/fresh_met/long: 16/96    189.3 s  (eta  946.4 s)
+  A/fresh_met/long: 32/96    374.2 s  (eta  748.4 s)
+  A/fresh_met/long: 48/96    561.5 s  (eta  561.5 s)
+  A/fresh_met/long: 64/96    751.4 s  (eta  375.7 s)
+  A/fresh_met/long: 80/96    939.6 s  (eta  187.9 s)
+  A/fresh_met/long: 96/96   1097.1 s  (eta    0.0 s)
+  A/fresh_met/long/unguided: 16/96     52.7 s  (eta  263.6 s)
+  A/fresh_met/long/unguided: 32/96    102.0 s  (eta  204.1 s)
+  A/fresh_met/long/unguided: 48/96    152.4 s  (eta  152.4 s)
+  A/fresh_met/long/unguided: 64/96    202.8 s  (eta  101.4 s)
+  A/fresh_met/long/unguided: 80/96    251.1 s  (eta   50.2 s)
+  A/fresh_met/long/unguided: 96/96    297.8 s  (eta    0.0 s)
+  [A:fresh_met] CEP 27.51 m [19.22, 73.98] at n=96; unguided 145.1 m; 51.0 % within 30 m
+  [A:fresh_met] convergence: {'converged': True, 'stable_at_n': 24, 'final_n': 96, 'final_cep_m': 27.506003874897146, 'final_ci_m': [17.833503851420392, 73.97963425719607], 'half_width_m': 28.07306520288784, 'half_width_pct': 102.06159110050955}
+wrote docs/monte_carlo.json
+total 1412.7 s
+keep-awake: system sleep suppressed for this process
+[A:physical] headline, long, n=64
+  drew 64 rounds (12.1 s: a fire-control solution and a fuze setting each)
+  A/physical/long: 16/64    191.3 s  (eta  573.8 s)
+  A/physical/long: 32/64    366.9 s  (eta  366.9 s)
+  A/physical/long: 48/64    547.3 s  (eta  182.4 s)
+  A/physical/long: 64/64    718.3 s  (eta    0.0 s)
+  A/physical/long/unguided: 16/64     51.7 s  (eta  155.0 s)
+  A/physical/long/unguided: 32/64    101.9 s  (eta  101.9 s)
+  A/physical/long/unguided: 48/64    153.6 s  (eta   51.2 s)
+  A/physical/long/unguided: 64/64    197.3 s  (eta    0.0 s)
+  [A:physical] CEP 59.50 m [34.19, 75.38] at n=64; unguided 140.3 m; 32.8 % within 30 m
+  [A:physical] convergence: {'converged': True, 'stable_at_n': 16, 'final_n': 64, 'final_cep_m': 59.50166800812182, 'final_ci_m': [34.18515591468642, 75.95695670050885], 'half_width_m': 20.885900392911218, 'half_width_pct': 35.10136957851391}
+wrote docs/monte_carlo.json
+total 928.8 s
+using Task U inflation {'sigma_mv': 7.895001365960363, 'sigma_az': 0.0028636003179898753}
+keep-awake: system sleep suppressed for this process
+[CS] knowledge term vs assumed variability, long, n=32, message 2.0 h old
+  drew 32 rounds (5.4 s: a fire-control solution and a fuze setting each)
+  CS/x0.5/perfect: 16/32    122.8 s  (eta  122.8 s)
+  CS/x0.5/perfect: 32/32    236.5 s  (eta    0.0 s)
+  drew 32 rounds (5.2 s: a fire-control solution and a fuze setting each)
+  CS/x0.5/aged: 16/32    117.6 s  (eta  117.6 s)
+  CS/x0.5/aged: 32/32    226.7 s  (eta    0.0 s)
+    x0.5  term range 1s   99.97 m  defl  25.94 m   CEP   9.15 ->  56.24 m
+  drew 32 rounds (6.0 s: a fire-control solution and a fuze setting each)
+  CS/x1/perfect: 16/32    117.7 s  (eta  117.7 s)
+  CS/x1/perfect: 32/32    227.3 s  (eta    0.0 s)
+  drew 32 rounds (5.6 s: a fire-control solution and a fuze setting each)
+  CS/x1/aged: 16/32    115.8 s  (eta  115.8 s)
+  CS/x1/aged: 32/32    224.5 s  (eta    0.0 s)
+    x1    term range 1s  160.90 m  defl  42.82 m   CEP  13.06 -> 108.87 m
+  drew 32 rounds (6.0 s: a fire-control solution and a fuze setting each)
+  CS/x2/perfect: 16/32    122.0 s  (eta  122.0 s)
+  CS/x2/perfect: 32/32    231.2 s  (eta    0.0 s)
+  drew 32 rounds (6.9 s: a fire-control solution and a fuze setting each)
+  CS/x2/aged: 16/32    125.5 s  (eta  125.5 s)
+  CS/x2/aged: 32/32    224.4 s  (eta    0.0 s)
+    x2    term range 1s  282.26 m  defl  91.86 m   CEP  44.15 -> 192.73 m
+    linearity (1.0 = the term scales with the assumed sigma): x0.5 1.243, x1 1.000, x2 0.877
+wrote docs/monte_carlo.json
+total 1406.8 s
+STAGE B COMPLETE
+keep-awake: system sleep suppressed for this process
+[U] uncorrected dispersion, mid2, n=64, met x1.0, message 2.0 h old
+  drew 64 rounds (9.9 s: a fire-control solution and a fuze setting each)
+  U/all: 16/64     49.0 s  (eta  147.0 s)
+  U/all: 32/64     96.4 s  (eta   96.4 s)
+  U/all: 48/64    140.0 s  (eta   46.7 s)
+  U/all: 64/64    182.0 s  (eta    0.0 s)
+    all                  sigma_r   127.31 m  sigma_d   53.84 m  bias_r     5.32 m
+  [U] modelled 127.3 m of 213.4 m range sigma (35.6 % of variance); residual to add 171.3 m
+wrote docs/monte_carlo.json
+using Task U inflation {'sigma_mv': 7.18774419930276, 'sigma_az': 0.0035842294412551856}
+total 193.3 s
+using Task U inflation {'sigma_mv': 7.18774419930276, 'sigma_az': 0.0035842294412551856}
+keep-awake: system sleep suppressed for this process
+[A:headline] headline, mid2, n=96
+  drew 96 rounds (14.9 s: a fire-control solution and a fuze setting each)
+  A/headline/mid2: 16/96    184.5 s  (eta  922.3 s)
+  A/headline/mid2: 32/96    354.9 s  (eta  709.7 s)
+  A/headline/mid2: 48/96    535.5 s  (eta  535.5 s)
+  A/headline/mid2: 64/96    699.7 s  (eta  349.9 s)
+  A/headline/mid2: 80/96    850.8 s  (eta  170.2 s)
+  A/headline/mid2: 96/96    986.8 s  (eta    0.0 s)
+  A/headline/mid2/unguided: 16/96     47.7 s  (eta  238.3 s)
+  A/headline/mid2/unguided: 32/96     89.6 s  (eta  179.1 s)
+  A/headline/mid2/unguided: 48/96    133.8 s  (eta  133.8 s)
+  A/headline/mid2/unguided: 64/96    181.3 s  (eta   90.6 s)
+  A/headline/mid2/unguided: 80/96    223.8 s  (eta   44.8 s)
+  A/headline/mid2/unguided: 96/96    262.0 s  (eta    0.0 s)
+  [A:headline] CEP 123.79 m [95.09, 146.97] at n=96; unguided 170.3 m; 13.5 % within 30 m
+  [A:headline] convergence: {'converged': True, 'stable_at_n': 16, 'final_n': 96, 'final_cep_m': 123.79251576250891, 'final_ci_m': [95.51118946398202, 146.96725415181876], 'half_width_m': 25.728032343918372, 'half_width_pct': 20.783188858748613}
+wrote docs/monte_carlo.json
+total 1264.8 s
+keep-awake: system sleep suppressed for this process
+[U] uncorrected dispersion, middle, n=64, met x1.0, message 2.0 h old
+  drew 64 rounds (6.3 s: a fire-control solution and a fuze setting each)
+  U/all: 16/64     32.5 s  (eta   97.4 s)
+  U/all: 32/64     62.5 s  (eta   62.5 s)
+  U/all: 48/64     92.3 s  (eta   30.8 s)
+  U/all: 64/64    118.7 s  (eta    0.0 s)
+    all                  sigma_r    77.47 m  sigma_d   25.36 m  bias_r     0.53 m
+  [U] modelled 77.5 m of 148.2 m range sigma (27.3 % of variance); residual to add 126.3 m
+wrote docs/monte_carlo.json
+using Task U inflation {'sigma_mv': 6.018098210334703, 'sigma_az': 0.004706280817550065}
+total 126.5 s
+using Task U inflation {'sigma_mv': 6.018098210334703, 'sigma_az': 0.004706280817550065}
+keep-awake: system sleep suppressed for this process
+[A:headline] headline, middle, n=96
+  drew 96 rounds (9.4 s: a fire-control solution and a fuze setting each)
+  A/headline/middle: 16/96    112.1 s  (eta  560.5 s)
+  A/headline/middle: 32/96    219.3 s  (eta  438.6 s)
+  A/headline/middle: 48/96    321.7 s  (eta  321.7 s)
+  A/headline/middle: 64/96    425.9 s  (eta  212.9 s)
+  A/headline/middle: 80/96    536.2 s  (eta  107.2 s)
+  A/headline/middle: 96/96    637.7 s  (eta    0.0 s)
+  A/headline/middle/unguided: 16/96     30.2 s  (eta  150.8 s)
+  A/headline/middle/unguided: 32/96     62.2 s  (eta  124.5 s)
+  A/headline/middle/unguided: 48/96     92.5 s  (eta   92.5 s)
+  A/headline/middle/unguided: 64/96    124.9 s  (eta   62.5 s)
+  A/headline/middle/unguided: 80/96    156.1 s  (eta   31.2 s)
+  A/headline/middle/unguided: 96/96    182.9 s  (eta    0.0 s)
+  [A:headline] CEP 81.71 m [64.80, 97.65] at n=96; unguided 98.8 m; 18.8 % within 30 m
+  [A:headline] convergence: {'converged': True, 'stable_at_n': 24, 'final_n': 96, 'final_cep_m': 81.70984702532544, 'final_ci_m': [64.79706664592373, 96.11825644173814], 'half_width_m': 15.660594897907202, 'half_width_pct': 19.166104781781446}
+wrote docs/monte_carlo.json
+total 831.1 s
+keep-awake: system sleep suppressed for this process
+[U] uncorrected dispersion, short2, n=64, met x1.0, message 2.0 h old
+  drew 64 rounds (3.6 s: a fire-control solution and a fuze setting each)
+  U/all: 16/64     14.0 s  (eta   41.9 s)
+  U/all: 32/64     28.1 s  (eta   28.1 s)
+  U/all: 48/64     42.5 s  (eta   14.2 s)
+  U/all: 64/64     56.3 s  (eta    0.0 s)
+    all                  sigma_r    38.17 m  sigma_d    4.13 m  bias_r     1.17 m
+  [U] modelled 38.2 m of 66.0 m range sigma (33.4 % of variance); residual to add 53.9 m
+wrote docs/monte_carlo.json
+using Task U inflation {'sigma_mv': 3.836568260148568, 'sigma_az': 0.005386996756525196}
+total 61.6 s
+using Task U inflation {'sigma_mv': 3.836568260148568, 'sigma_az': 0.005386996756525196}
+keep-awake: system sleep suppressed for this process
+[A:headline] headline, short2, n=96
+  drew 96 rounds (4.5 s: a fire-control solution and a fuze setting each)
+  A/headline/short2: 16/96     54.6 s  (eta  273.0 s)
+  A/headline/short2: 32/96    102.5 s  (eta  205.0 s)
+  A/headline/short2: 48/96    153.8 s  (eta  153.8 s)
+  A/headline/short2: 64/96    203.9 s  (eta  102.0 s)
+  A/headline/short2: 80/96    254.9 s  (eta   51.0 s)
+  A/headline/short2: 96/96    301.8 s  (eta    0.0 s)
+  A/headline/short2/unguided: 16/96     14.9 s  (eta   74.5 s)
+  A/headline/short2/unguided: 32/96     29.2 s  (eta   58.3 s)
+  A/headline/short2/unguided: 48/96     42.8 s  (eta   42.8 s)
+  A/headline/short2/unguided: 64/96     56.7 s  (eta   28.3 s)
+  A/headline/short2/unguided: 80/96     70.6 s  (eta   14.1 s)
+  A/headline/short2/unguided: 96/96     82.7 s  (eta    0.0 s)
+  [A:headline] CEP 46.62 m [37.93, 55.84] at n=96; unguided 49.0 m; 33.3 % within 30 m
+  [A:headline] convergence: {'converged': True, 'stable_at_n': 24, 'final_n': 96, 'final_cep_m': 46.62319869371087, 'final_ci_m': [37.703307329525146, 55.856795219035305], 'half_width_m': 9.07674394475508, 'half_width_pct': 19.468299471223254}
+wrote docs/monte_carlo.json
+total 390.2 s
+keep-awake: system sleep suppressed for this process
+[U] uncorrected dispersion, short, n=64, met x1.0, message 2.0 h old
+  drew 64 rounds (1.9 s: a fire-control solution and a fuze setting each)
+  U/all: 16/64      6.7 s  (eta   20.2 s)
+  U/all: 32/64     13.5 s  (eta   13.5 s)
+  U/all: 48/64     20.5 s  (eta    6.8 s)
+  U/all: 64/64     26.6 s  (eta    0.0 s)
+    all                  sigma_r    20.98 m  sigma_d    1.34 m  bias_r     1.44 m
+  [U] modelled 21.0 m of 33.1 m range sigma (40.2 % of variance); residual to add 25.6 m
+wrote docs/monte_carlo.json
+using Task U inflation {'sigma_mv': 3.0552381126127055, 'sigma_az': 0.0054436936398043105}
+total 30.3 s
+using Task U inflation {'sigma_mv': 3.0552381126127055, 'sigma_az': 0.0054436936398043105}
+keep-awake: system sleep suppressed for this process
+[A:headline] headline, short, n=96
+  drew 96 rounds (2.3 s: a fire-control solution and a fuze setting each)
+  A/headline/short: 16/96     24.1 s  (eta  120.7 s)
+  A/headline/short: 32/96     48.6 s  (eta   97.3 s)
+  A/headline/short: 48/96     71.1 s  (eta   71.1 s)
+  A/headline/short: 64/96     94.5 s  (eta   47.3 s)
+  A/headline/short: 80/96    117.9 s  (eta   23.6 s)
+  A/headline/short: 96/96    139.0 s  (eta    0.0 s)
+  A/headline/short/unguided: 16/96      7.2 s  (eta   35.8 s)
+  A/headline/short/unguided: 32/96     14.4 s  (eta   28.7 s)
+  A/headline/short/unguided: 48/96     21.4 s  (eta   21.4 s)
+  A/headline/short/unguided: 64/96     28.6 s  (eta   14.3 s)
+  A/headline/short/unguided: 80/96     35.3 s  (eta    7.1 s)
+  A/headline/short/unguided: 96/96     40.9 s  (eta    0.0 s)
+  [A:headline] CEP 23.74 m [18.71, 28.76] at n=96; unguided 23.0 m; 60.4 % within 30 m
+  [A:headline] convergence: {'converged': True, 'stable_at_n': 16, 'final_n': 96, 'final_cep_m': 23.737396461400905, 'final_ci_m': [18.56831115663003, 28.764831648996648], 'half_width_m': 5.098260246183308, 'half_width_pct': 21.47775664645248}
+wrote docs/monte_carlo.json
+total 183.4 s
+STAGE C COMPLETE
+wrote docs/mc_tables.md (493 lines)
+wrote docs/figures\mc_scatter_fresh_met.png
+wrote docs/figures\mc_scatter_physical.png
+wrote docs/figures\mc_scatter.png
+wrote docs/figures\mc_convergence.png
+wrote docs/figures\mc_budget.png
+wrote docs/figures\mc_atmosphere.png
+wrote docs/figures\mc_monitor.png
+wrote docs/figures\mc_staging.png
+wrote docs/figures\mc_band.png
+9 figures
+ALL STEP 6 CAMPAIGNS COMPLETE

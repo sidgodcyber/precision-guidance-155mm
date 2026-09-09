@@ -1,0 +1,551 @@
+{
+ "engagement": "long",
+ "config": {
+  "full_scales_deg_s": [
+   125.0,
+   250.0,
+   400.0,
+   1000.0,
+   2000.0,
+   4000.0,
+   8000.0
+  ],
+  "offsets_m": [
+   0.003,
+   0.01,
+   0.025,
+   0.05
+  ],
+  "azimuths_deg": [
+   0,
+   30,
+   60,
+   90,
+   120,
+   150,
+   180,
+   210,
+   240,
+   270,
+   300,
+   330
+  ],
+  "field": {
+   "intensity_nT": 46500.0,
+   "declination_deg": 0.0,
+   "inclination_deg": 33.0,
+   "site": "Nagpur 21.15 N 79.09 E"
+  }
+ },
+ "confidence": {
+  "gyro_full_scale": [
+   "HIGH",
+   "ADIS16505-3 datasheet: dynamic range +-2000 deg/s minimum"
+  ],
+  "gyro_arw": [
+   "MEDIUM",
+   "ADIS16505 angular random walk 0.13 deg/sqrt(hr) (x,y axes, 1 sigma), ADI figure via distributor summary"
+  ],
+  "gyro_bias_stability": [
+   "MEDIUM",
+   "ADIS16505-3 in-run bias stability 7.5 deg/hr typ (1 sigma, x axis, 25 C)"
+  ],
+  "gyro_bias_repeatability": [
+   "LOW",
+   "turn-on-to-turn-on bias not separately stated for this part; taken as 5x the in-run figure, the usual tactical-MEMS ratio"
+  ],
+  "gyro_scale_factor": [
+   "LOW",
+   "ADI quotes sensitivity tolerance and tempco separately; 0.5 % is an engineering roll-up over the qualification temperature band"
+  ],
+  "gyro_misalignment": [
+   "MEDIUM",
+   "ADIS165xx axis-to-axis misalignment quoted at 0.25 deg for the family"
+  ],
+  "gyro_shock_survival": [
+   "MEDIUM",
+   "ADIS16505 mechanical shock survivability 14 700 m/s^2 = 1500 g. THAT IS BELOW GUN LAUNCH -- see the note on GYRO_DESPUN"
+  ],
+  "accel_full_scale": [
+   "MEDIUM",
+   "ADIS16505 accelerometer range +-392 m/s^2 (40 g); flight-phase specific force measured at 2.11 g peak, so range is not binding"
+  ],
+  "accel_vrw": [
+   "LOW",
+   "velocity random walk not found as a table line; 0.023 m/s/sqrt(s) is the usual figure for this noise-density class"
+  ],
+  "accel_bias_stability": [
+   "MEDIUM",
+   "ADIS16505 accelerometer in-run bias stability 26.5 micro-m/s^2 (2.7 micro-g), x and y axes"
+  ],
+  "accel_bias_repeatability": [
+   "LOW",
+   "turn-on repeatability not stated; taken as 1 mg, the tactical-MEMS norm"
+  ],
+  "accel_scale_factor": [
+   "LOW",
+   "engineering roll-up over temperature, as gyro_scale_factor"
+  ],
+  "accel_misalignment": [
+   "MEDIUM",
+   "as gyro_misalignment; same die pack"
+  ],
+  "setback_acceleration": [
+   "MEDIUM",
+   "155 mm gun launch 10 000-20 000 g peak; the gun-hard MEMS IMU literature and the Colibrys HS8000 part class both size above 20 000 g"
+  ],
+  "mag_field_range": [
+   "HIGH",
+   "HMC1053 datasheet: field range +-6 gauss full scale"
+  ],
+  "mag_sensitivity_tolerance": [
+   "HIGH",
+   "HMC1053 datasheet: sensitivity 0.8 / 1.0 / 1.2 mV/V/gauss min/typ/max, i.e. +-20 % part-to-part"
+  ],
+  "mag_linearity": [
+   "HIGH",
+   "HMC1053 datasheet: linearity error 0.1 %FS at +-1 gauss (best fit straight line)"
+  ],
+  "mag_hysteresis": [
+   "HIGH",
+   "HMC1053 datasheet: hysteresis 0.06 %FS, repeatability 0.1 %FS, 3 sweeps across +-3 gauss"
+  ],
+  "mag_cross_axis": [
+   "HIGH",
+   "HMC1053 datasheet: cross-axis effect +-3 %FS at 1 gauss cross field. This is a SOFT-IRON-shaped error inside the part itself"
+  ],
+  "mag_noise_density": [
+   "HIGH",
+   "HMC1053 datasheet: 50 nV/sqrt(Hz) at 1 kHz, Vbridge 5 V, on a 1.0 mV/V/gauss bridge -> 1.0 nT/sqrt(Hz)"
+  ],
+  "mag_bandwidth": [
+   "HIGH",
+   "HMC1053 datasheet: magnetic signal bandwidth DC to 5 MHz. This is why an ANALOG AMR bridge and not a digital magnetometer: there is no internal output data rate for the roll modulation to alias against, and the ADC sets the sample rate"
+  ],
+  "mag_tempco": [
+   "HIGH",
+   "HMC1053 datasheet: sensitivity tempco -2700 ppm/C typ (Vbridge drive), bridge offset tempco +-10 ppm/C WITH set/reset"
+  ],
+  "mag_perming": [
+   "HIGH",
+   "HMC1053 datasheet: max exposed field 10 000 gauss with no perming effect on zero reading; sensitivity degrades above a 20 gauss disturbing field and a set/reset pulse restores it"
+  ],
+  "mag_calibration_residual": [
+   "LOW",
+   "THE ROLL ERROR FLOOR. No source measures the residual of a hard/soft-iron calibration against a 43 kg steel shell body with a kit screwed into the fuze well. 1.5 % of field magnitude and 0.9 deg of direction is an engineering estimate from published air-cored ellipsoid-fit results, degraded for the steel. Section 5 of docs/SENSOR-MODELS.md says what would settle it"
+  ],
+  "mag_field_model": [
+   "MEDIUM",
+   "IGRF/WMM main-field accuracy is conventionally quoted near 150 nT rms; crustal anomaly rather than model truncation is the practical limit and reaches several hundred nT over ordinary terrain"
+  ],
+  "geomagnetic_site": [
+   "MEDIUM",
+   "IGRF values for Nagpur (21.15 N, 79.09 E) near epoch 2026 recalled, not read from the IGRF calculator. The absolute field barely matters -- what the filter sees is the model residual above -- but the DIP ANGLE sets roll observability and is worth checking against the calculator before flight"
+  ],
+  "resolver_accuracy": [
+   "MEDIUM",
+   "magnetic rotary encoder class (AS5047P and similar): 0.35 deg typical integral non-linearity with dynamic angle-error compensation, 28 000 rpm rating against a required 12 500 rpm"
+  ],
+  "resolver_quantisation": [
+   "MEDIUM",
+   "14-bit single-turn output = 0.022 deg"
+  ],
+  "gnss_position_sigma": [
+   "MEDIUM",
+   "single-frequency L1 C/A with SBAS-class corrections, 3 m horizontal and 5 m vertical 1 sigma: the standard open-sky figure for the class"
+  ],
+  "gnss_velocity_sigma": [
+   "MEDIUM",
+   "Doppler velocity 0.05-0.1 m/s 1 sigma open sky; 0.1 m/s carried, degraded for the spin-modulated tracking loop"
+  ],
+  "gnss_rate_latency": [
+   "MEDIUM",
+   "5 Hz solution and 100 ms of transport plus solution latency are ordinary for a small OEM receiver. Latency is modelled EXPLICITLY because at 500 m/s it is 50 m of position"
+  ],
+  "gnss_reacquire_s": [
+   "LOW",
+   "DECIDES WHETHER THE WARM START IS A FEATURE. Published hot-start TTFF is 0.5-20 s and the munition literature reports first acquisition at approximately 20 s, but no source gives a DISTRIBUTION for a 15 000 g launch into 208 Hz spin with ephemeris pre-loaded. 3-12 s with a 6 s median is an estimate"
+  ],
+  "gnss_spin_tracking": [
+   "MEDIUM",
+   "roll estimation from single-patch C/N0 modulation demonstrated down to 29 dB-Hz, with spin rates to 300 Hz addressed in the same literature"
+  ],
+  "gnss_cn0_roll_sigma": [
+   "LOW",
+   "5 deg 1 sigma per fitted revolution is an estimate. The published work demonstrates the measurement but at spin rates, integration times and C/N0 that are not this engagement's"
+  ],
+  "baro_noise": [
+   "MEDIUM",
+   "MS5611 class: 10 cm resolution and 1.5 mbar absolute accuracy over temperature, which is about 12 m of pressure altitude near sea level"
+  ],
+  "baro_port_error": [
+   "LOW",
+   "THE REASON THE BAROMETER IS NOT AN ALTITUDE SOURCE. The static-port pressure coefficient on a spinning shell at M 1.5 is not published for this body. -0.15 to +0.05 of q_bar is an estimate from generic supersonic body pressure distributions; at 137 kPa that is up to 20 kPa, which is over 1 500 m of pressure altitude"
+  ]
+ },
+ "low_confidence": [
+  "gyro_bias_repeatability",
+  "gyro_scale_factor",
+  "accel_vrw",
+  "accel_bias_repeatability",
+  "accel_scale_factor",
+  "mag_calibration_residual",
+  "gnss_reacquire_s",
+  "gnss_cn0_roll_sigma",
+  "baro_port_error"
+ ],
+ "saturation": {
+  "t_dep": 5.549999999999644,
+  "duration_s": 42.771122404663835,
+  "body_spin_deg_s": {
+   "at_deploy": 74951.99447815487,
+   "at_impact": 56132.20585001759,
+   "max": 74951.99447815487
+  },
+  "nose_rate_deg_s": {
+   "at_deploy": 74951.99447815487,
+   "max": 74951.99447815487
+  },
+  "classes": {
+   "125.0": {
+    "body": {
+     "fraction_saturated": 1.0,
+     "last_exceeded_s_after_deploy": 42.771122404663835,
+     "clear_after_s": 42.771122404663835
+    },
+    "despun": {
+     "fraction_saturated": 0.19960723804180108,
+     "last_exceeded_s_after_deploy": 42.24200000004653,
+     "clear_after_s": 42.24200000004653,
+     "fraction_saturated_after_despin": 0.15616681455190773
+    }
+   },
+   "250.0": {
+    "body": {
+     "fraction_saturated": 1.0,
+     "last_exceeded_s_after_deploy": 42.771122404663835,
+     "clear_after_s": 42.771122404663835
+    },
+    "despun": {
+     "fraction_saturated": 0.1355496329545986,
+     "last_exceeded_s_after_deploy": 42.180000000046235,
+     "clear_after_s": 42.180000000046235,
+     "fraction_saturated_after_despin": 0.08863255447106379
+    }
+   },
+   "400.0": {
+    "body": {
+     "fraction_saturated": 1.0,
+     "last_exceeded_s_after_deploy": 42.771122404663835,
+     "clear_after_s": 42.771122404663835
+    },
+    "despun": {
+     "fraction_saturated": 0.0899144340019638,
+     "last_exceeded_s_after_deploy": 42.136000000046025,
+     "clear_after_s": 42.136000000046025,
+     "fraction_saturated_after_despin": 0.04071773636991028
+    }
+   },
+   "1000.0": {
+    "body": {
+     "fraction_saturated": 1.0,
+     "last_exceeded_s_after_deploy": 42.771122404663835,
+     "clear_after_s": 42.771122404663835
+    },
+    "despun": {
+     "fraction_saturated": 0.05035769392621686,
+     "last_exceeded_s_after_deploy": 2.1519999999988073,
+     "clear_after_s": 2.1519999999988073,
+     "fraction_saturated_after_despin": 0.0
+    }
+   },
+   "2000.0": {
+    "body": {
+     "fraction_saturated": 1.0,
+     "last_exceeded_s_after_deploy": 42.771122404663835,
+     "clear_after_s": 42.771122404663835
+    },
+    "despun": {
+     "fraction_saturated": 0.04909524477486323,
+     "last_exceeded_s_after_deploy": 2.0979999999988372,
+     "clear_after_s": 2.0979999999988372,
+     "fraction_saturated_after_despin": 0.0
+    }
+   },
+   "4000.0": {
+    "body": {
+     "fraction_saturated": 1.0,
+     "last_exceeded_s_after_deploy": 42.771122404663835,
+     "clear_after_s": 42.771122404663835
+    },
+    "despun": {
+     "fraction_saturated": 0.0468976481039884,
+     "last_exceeded_s_after_deploy": 2.0039999999988893,
+     "clear_after_s": 2.0039999999988893,
+     "fraction_saturated_after_despin": 0.0
+    }
+   },
+   "8000.0": {
+    "body": {
+     "fraction_saturated": 1.0,
+     "last_exceeded_s_after_deploy": 42.771122404663835,
+     "clear_after_s": 42.771122404663835
+    },
+    "despun": {
+     "fraction_saturated": 0.03979052695562725,
+     "last_exceeded_s_after_deploy": 1.6999999999990578,
+     "clear_after_s": 1.6999999999990578,
+     "fraction_saturated_after_despin": 0.0
+    }
+   }
+  },
+  "nose_rate_after_despin_deg_s": {
+   "max": 807.6043020628325,
+   "p99": 605.6389557156831,
+   "p95": 367.05823496139607,
+   "median": 14.529464044607845,
+   "mean": 67.61106879809141
+  },
+  "transverse_body_rate_deg_s_max": 22.066728430706682
+ },
+ "lever": {
+  "offsets": {
+   "0.003": {
+    "tangential_rms": 1.10313556379858,
+    "tangential_max": 15.248088531235496,
+    "centripetal_despun_rms": 0.1246289482993567,
+    "centripetal_despun_max": 1.2321833823370703,
+    "centripetal_body_max_g": 496.56936247030313,
+    "centripetal_body_mean_g": 383.9551956323097
+   },
+   "0.010": {
+    "tangential_rms": 1.532920341789371,
+    "tangential_max": 17.21605247826228,
+    "centripetal_despun_rms": 0.24899890412104606,
+    "centripetal_despun_max": 2.434540508568366,
+    "centripetal_body_max_g": 1655.2312082343437,
+    "centripetal_body_mean_g": 1279.850652107699
+   },
+   "0.025": {
+    "tangential_rms": 2.917837451015254,
+    "tangential_max": 21.43355069619344,
+    "centripetal_despun_rms": 0.5603661417530319,
+    "centripetal_despun_max": 5.319388146363082,
+    "centripetal_body_max_g": 4138.078020585859,
+    "centripetal_body_mean_g": 3199.626630269248
+   },
+   "0.050": {
+    "tangential_rms": 5.487152164579145,
+    "tangential_max": 28.46341668949511,
+    "centripetal_despun_rms": 1.093595737096829,
+    "centripetal_despun_max": 10.151547142937389,
+    "centripetal_body_max_g": 8276.156041171718,
+    "centripetal_body_mean_g": 6399.253260538496
+   }
+  },
+  "nose_inertia_kg_m2": 0.0018,
+  "flight_specific_force_mean": 5.606705445853279,
+  "flight_specific_force_max_g": 1.8022935487479903,
+  "nose_angular_accel_rad_s2": {
+   "mean": 92.92909521923904,
+   "max": 293.2395826846243
+  },
+  "body_mounted_offset_for_40g_mm": 0.2416580825748719
+ },
+ "observability": {
+  "azimuths_deg": [
+   0,
+   30,
+   60,
+   90,
+   120,
+   150,
+   180,
+   210,
+   240,
+   270,
+   300,
+   330
+  ],
+  "rows": [
+   {
+    "azimuth_deg": 0,
+    "angle_deg": {
+     "min": 1.6405664463162355,
+     "median": 25.078084498876564,
+     "max": 57.757887107397536
+    },
+    "sin_min": 0.0286293736744869,
+    "sin_median": 0.4238527280474968,
+    "amplification_median": 2.3593245732905404,
+    "fraction_below_15deg": 0.37616822429906543,
+    "roll_sigma_median_deg": 2.0276776243844927
+   },
+   {
+    "azimuth_deg": 30,
+    "angle_deg": {
+     "min": 24.863052134056232,
+     "median": 39.00939321457833,
+     "max": 64.60836589913083
+    },
+    "sin_min": 0.42045080772721743,
+    "sin_median": 0.6294477702102201,
+    "amplification_median": 1.5886943166349226,
+    "fraction_below_15deg": 0.0,
+    "roll_sigma_median_deg": 1.3653820592758696
+   },
+   {
+    "azimuth_deg": 60,
+    "angle_deg": {
+     "min": 48.4280020613753,
+     "median": 62.51493814104466,
+     "max": 81.48326887591534
+    },
+    "sin_min": 0.7481224806197022,
+    "sin_median": 0.887131190009879,
+    "amplification_median": 1.1272289952845234,
+    "fraction_below_15deg": 0.0,
+    "roll_sigma_median_deg": 0.9687819596182434
+   },
+   {
+    "azimuth_deg": 90,
+    "angle_deg": {
+     "min": 68.44268130791392,
+     "median": 87.55323092322874,
+     "max": 103.75775622349039
+    },
+    "sin_min": 0.9300504546717822,
+    "sin_median": 0.9846722298764436,
+    "amplification_median": 1.0155664043712629,
+    "fraction_below_15deg": 0.0,
+    "roll_sigma_median_deg": 0.8728150003824894
+   },
+   {
+    "azimuth_deg": 120,
+    "angle_deg": {
+     "min": 85.07206619436506,
+     "median": 111.65935334606702,
+     "max": 128.46989963099645
+    },
+    "sin_min": 0.7829350872438484,
+    "sin_median": 0.9293946426017778,
+    "amplification_median": 1.0759691891820462,
+    "fraction_below_15deg": 0.0,
+    "roll_sigma_median_deg": 0.924727401365581
+   },
+   {
+    "azimuth_deg": 150,
+    "angle_deg": {
+     "min": 96.42718709839089,
+     "median": 131.30587655226338,
+     "max": 153.3418616882012
+    },
+    "sin_min": 0.4486661599121653,
+    "sin_median": 0.7511962950117923,
+    "amplification_median": 1.3312103603382401,
+    "fraction_below_15deg": 0.0,
+    "roll_sigma_median_deg": 1.144090696936602
+   },
+   {
+    "azimuth_deg": 180,
+    "angle_deg": {
+     "min": 99.71604517904646,
+     "median": 138.91321882387555,
+     "max": 171.74918463094892
+    },
+    "sin_min": 0.14350670558139347,
+    "sin_median": 0.6572008319599336,
+    "amplification_median": 1.5216081807985564,
+    "fraction_below_15deg": 0.13551401869158877,
+    "roll_sigma_median_deg": 1.307723074745941
+   },
+   {
+    "azimuth_deg": 210,
+    "angle_deg": {
+     "min": 93.77649151419484,
+     "median": 128.6842062839111,
+     "max": 152.66876944514158
+    },
+    "sin_min": 0.45913385026129105,
+    "sin_median": 0.7806018391427811,
+    "amplification_median": 1.2810646974607305,
+    "fraction_below_15deg": 0.0,
+    "roll_sigma_median_deg": 1.1009924004791305
+   },
+   {
+    "azimuth_deg": 240,
+    "angle_deg": {
+     "min": 80.32677630284846,
+     "median": 107.96872375939755,
+     "max": 127.87611462605037
+    },
+    "sin_min": 0.7893400985034732,
+    "sin_median": 0.9512240639140221,
+    "amplification_median": 1.051277252059909,
+    "fraction_below_15deg": 0.0,
+    "roll_sigma_median_deg": 0.903506045841494
+   },
+   {
+    "azimuth_deg": 270,
+    "angle_deg": {
+     "min": 62.19300467454433,
+     "median": 83.6235829498163,
+     "max": 103.10006394439115
+    },
+    "sin_min": 0.8845240267957798,
+    "sin_median": 0.9834048953929367,
+    "amplification_median": 1.0168751501284348,
+    "fraction_below_15deg": 0.0,
+    "roll_sigma_median_deg": 0.8739398153522835
+   },
+   {
+    "azimuth_deg": 300,
+    "angle_deg": {
+     "min": 41.55378427345727,
+     "median": 58.585512216284926,
+     "max": 80.94837966129434
+    },
+    "sin_min": 0.6633228103833605,
+    "sin_median": 0.8534181834123504,
+    "amplification_median": 1.1717593525915633,
+    "fraction_below_15deg": 0.0,
+    "roll_sigma_median_deg": 1.0070522393368977
+   },
+   {
+    "azimuth_deg": 330,
+    "angle_deg": {
+     "min": 20.597614348769266,
+     "median": 35.698827809223154,
+     "max": 64.27005969378426
+    },
+    "sin_min": 0.3518026729500268,
+    "sin_median": 0.5835239426269235,
+    "amplification_median": 1.713733185567848,
+    "fraction_below_15deg": 0.0,
+    "roll_sigma_median_deg": 1.47283878160543
+   }
+  ]
+ },
+ "euler_identity": {
+  "max_roll_error_rad": 6.254168523304403e-12,
+  "max_pitch_error_rad": 0.0,
+  "max_yaw_error_rad": 0.0,
+  "samples": 107
+ },
+ "alignment": {
+  "total_aoa_deg": {
+   "mean": 1.58705069149119,
+   "rms": 1.7846794272630533,
+   "p95": 3.2234082306408887,
+   "max": 4.4003497777362215
+  },
+  "yaw_component_deg": {
+   "mean": -0.025609367412361313,
+   "rms": 1.26842320472321
+  },
+  "pitch_component_deg": {
+   "mean": 0.025360970950021045,
+   "rms": 1.2546462145430846
+  }
+ }
+}

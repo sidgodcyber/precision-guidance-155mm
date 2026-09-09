@@ -1,0 +1,55 @@
+resuming from docs/guidance_cep.json: have tasks ['2', 'c', 'd', 'e', 'f', 'g', 'r']
+  best by measured CEP: proportional
+
+=== TASK D.2: the deflection half of the aim-off ===
+  D 2-D aim-off (+16.7 m): 24/64    173.3 s
+  D 2-D aim-off (+16.7 m): 48/64    341.1 s
+  D 2-D aim-off (+16.7 m): 64/64    491.6 s
+    2-D aim-off (175.0 m, +16.7 m)  CEP    29.7 m
+  wrote docs/guidance_cep.json (494.1 s elapsed)
+
+=== TASK E.2: the monitor, with its start time sized ===
+  E2 full: 24/64    162.7 s
+  E2 full: 48/64    333.2 s
+  E2 full: 64/64    434.1 s
+    full             CEP    39.6 m  monitor fired 2/64
+  E2 stage2_fail: 24/64    153.1 s
+  E2 stage2_fail: 48/64    306.9 s
+  E2 stage2_fail: 64/64    402.8 s
+    stage2_fail      CEP   216.0 m  monitor fired 46/64
+  wrote docs/guidance_cep.json (1332.9 s elapsed)
+
+=== TASK F.2: the firing table, staged aim-off ===
+  F short: 24/64     20.5 s
+  F short: 48/64     41.3 s
+  F short: 64/64     54.2 s
+  F short unguided: 24/32     19.5 s
+  F short unguided: 32/32     25.3 s
+    short    CEP    23.9 m against unguided    24.3 m
+  F short2: 24/64     42.9 s
+  F short2: 48/64     86.7 s
+  F short2: 64/64    115.8 s
+  F short2 unguided: 24/32     43.1 s
+  F short2 unguided: 32/32     55.1 s
+    short2   CEP    42.9 m against unguided    46.8 m
+  F middle: 24/64     94.6 s
+  F middle: 48/64    188.1 s
+  F middle: 64/64    245.8 s
+  F middle unguided: 24/32     88.4 s
+  F middle unguided: 32/32    117.1 s
+    middle   CEP    62.9 m against unguided   103.8 m
+  F mid2: 24/64    139.6 s
+  F mid2: 48/64    281.2 s
+  F mid2: 64/64    371.5 s
+  F mid2 unguided: 24/32    129.1 s
+  F mid2 unguided: 32/32    170.2 s
+    mid2     CEP    70.2 m against unguided   157.3 m
+  F long: 24/64    155.9 s
+  F long: 48/64    312.9 s
+  F long: 64/64   1127.7 s
+  F long unguided: 24/32    145.8 s
+  F long unguided: 32/32    193.9 s
+    long     CEP    36.2 m against unguided   202.9 m
+  wrote docs/guidance_cep.json (3816.1 s elapsed)
+
+wrote docs/guidance_cep.json  (3816.6 s)

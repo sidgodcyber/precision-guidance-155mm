@@ -1,0 +1,93 @@
+==============================================================================
+SENSOR MODEL CONFIDENCE -- read before quoting any navigation result
+==============================================================================
+Every error term in gnc/sensors.py is a named line on a named part class.
+The ones graded LOW are ENGINEERING ESTIMATES: no source states them for
+this part in this application, and they are where the model is weakest.
+
+  gyro_bias_repeatability   LOW     turn-on-to-turn-on bias not separately
+                                    stated for this part; taken as 5x the
+                                    in-run figure, the usual tactical-MEMS
+                                    ratio
+  gyro_scale_factor         LOW     ADI quotes sensitivity tolerance and
+                                    tempco separately; 0.5 % is an
+                                    engineering roll-up over the
+                                    qualification temperature band
+  accel_vrw                 LOW     velocity random walk not found as a
+                                    table line; 0.023 m/s/sqrt(s) is the
+                                    usual figure for this noise-density
+                                    class
+  accel_bias_repeatability  LOW     turn-on repeatability not stated; taken
+                                    as 1 mg, the tactical-MEMS norm
+  accel_scale_factor        LOW     engineering roll-up over temperature, as
+                                    gyro_scale_factor
+  mag_calibration_residual  LOW     THE ROLL ERROR FLOOR. No source measures
+                                    the residual of a hard/soft-iron
+                                    calibration against a 43 kg steel shell
+                                    body with a kit screwed into the fuze
+                                    well. 1.5 % of field magnitude and 0.9
+                                    deg of direction is an engineering
+                                    estimate from published air-cored
+                                    ellipsoid-fit results, degraded for the
+                                    steel. Section 5 of
+                                    docs/SENSOR-MODELS.md says what would
+                                    settle it
+  gnss_reacquire_s          LOW     DECIDES WHETHER THE WARM START IS A
+                                    FEATURE. Published hot-start TTFF is
+                                    0.5-20 s and the munition literature
+                                    reports first acquisition at
+                                    approximately 20 s, but no source gives
+                                    a DISTRIBUTION for a 15 000 g launch
+                                    into 208 Hz spin with ephemeris
+                                    pre-loaded. 3-12 s with a 6 s median is
+                                    an estimate
+  gnss_cn0_roll_sigma       LOW     5 deg 1 sigma per fitted revolution is
+                                    an estimate. The published work
+                                    demonstrates the measurement but at spin
+                                    rates, integration times and C/N0 that
+                                    are not this engagement's
+  baro_port_error           LOW     THE REASON THE BAROMETER IS NOT AN
+                                    ALTITUDE SOURCE. The static-port
+                                    pressure coefficient on a spinning shell
+                                    at M 1.5 is not published for this body.
+                                    -0.15 to +0.05 of q_bar is an estimate
+                                    from generic supersonic body pressure
+                                    distributions; at 137 kPa that is up to
+                                    20 kPa, which is over 1 500 m of
+                                    pressure altitude
+
+  The two that decide a reported number:
+    mag_calibration_residual  sets the roll BIAS, which adds one for one to
+                              the servo's 0.58 deg tracking error
+                              (docs/CONTROL-CHARACTERISATION.md sec 4.3).
+    gnss_reacquire_s          decides whether the Task D warm start moves
+                              the solution inside t_dep + 3 s, and so
+                              whether it is a feature at all.
+==============================================================================
+flying 1 reference trajectories ...
+  39.0 s
+  tuning: 48 combinations x 4 seeds = 192 replays
+
+     kp      kv    mag  align |  NEES15/15   NEES9/9   NEES6/6 | pos rms m
+  200.0   500.0  0.050   1.78 |      59.94     68.27     37.76 | [20.73  5.04 31.96]
+  200.0    50.0  0.050   1.78 |      61.27     69.63     39.03 | [18.22  4.42 25.4 ]
+   50.0   500.0  0.050   1.78 |      69.04     74.74     45.65 | [14.81  3.6  24.52]
+   50.0    50.0  0.050   1.78 |      70.31     75.60     46.37 | [14.23  3.44 22.58]
+  200.0   500.0  0.050   4.00 |      62.21     76.37     40.99 | [20.89  5.62 34.54]
+  200.0    50.0  0.050   4.00 |      63.72     77.35     41.89 | [18.36  4.78 27.3 ]
+   50.0   500.0  0.050   4.00 |      73.05     84.00     48.64 | [14.93  3.76 26.3 ]
+   50.0    50.0  0.050   4.00 |      74.25     84.54     49.12 | [14.33  3.54 24.13]
+   10.0   500.0  0.050   1.78 |      90.80     88.53     60.69 | [10.2   3.07 18.48]
+   10.0    50.0  0.050   1.78 |      91.70     88.81     60.79 | [10.03  3.03 18.13]
+  200.0     1.0  0.050   1.78 |     117.63     89.24     55.99 | [6.43 1.53 6.97]
+   50.0     1.0  0.050   1.78 |     120.65     90.36     56.81 | [ 6.82  2.01 10.58]
+   10.0     1.0  0.050   1.78 |     131.31     95.52     61.49 | [ 5.92  2.51 12.21]
+  200.0     1.0  0.050   4.00 |     122.12     95.74     55.49 | [6.43 1.55 7.15]
+   50.0     1.0  0.050   4.00 |     125.38     97.12     56.28 | [ 6.82  2.06 10.78]
+   10.0   500.0  0.050   4.00 |      96.81     99.63     63.03 | [10.26  3.07 19.58]
+   10.0    50.0  0.050   4.00 |      97.59     99.66     62.99 | [10.08  3.03 19.17]
+   10.0     1.0  0.050   4.00 |     136.93    103.03     60.79 | [ 5.91  2.57 12.42]
+    1.0     1.0  0.050   1.78 |     176.79    122.81     91.29 | [ 3.53  2.63 10.96]
+    1.0    50.0  0.050   1.78 |     156.22    126.90     99.42 | [ 4.42  2.72 13.22]
+
+wrote docs/nav_tuning.json in 760.2 s

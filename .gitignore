@@ -13,3 +13,7 @@ venv/
 # Local working notes — not published. README.md is the only tracked markdown.
 *.md
 !/README.md
+
+# Scratch artifacts from local runs
+/scratch_traj.npz
+/sweep_out.json

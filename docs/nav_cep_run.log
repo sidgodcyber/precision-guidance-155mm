@@ -1,0 +1,170 @@
+==============================================================================
+SENSOR MODEL CONFIDENCE -- read before quoting any navigation result
+==============================================================================
+Every error term in gnc/sensors.py is a named line on a named part class.
+The ones graded LOW are ENGINEERING ESTIMATES: no source states them for
+this part in this application, and they are where the model is weakest.
+
+  gyro_bias_repeatability   LOW     turn-on-to-turn-on bias not separately
+                                    stated for this part; taken as 5x the
+                                    in-run figure, the usual tactical-MEMS
+                                    ratio
+  gyro_scale_factor         LOW     ADI quotes sensitivity tolerance and
+                                    tempco separately; 0.5 % is an
+                                    engineering roll-up over the
+                                    qualification temperature band
+  accel_vrw                 LOW     velocity random walk not found as a
+                                    table line; 0.023 m/s/sqrt(s) is the
+                                    usual figure for this noise-density
+                                    class
+  accel_bias_repeatability  LOW     turn-on repeatability not stated; taken
+                                    as 1 mg, the tactical-MEMS norm
+  accel_scale_factor        LOW     engineering roll-up over temperature, as
+                                    gyro_scale_factor
+  mag_calibration_residual  LOW     THE ROLL ERROR FLOOR. No source measures
+                                    the residual of a hard/soft-iron
+                                    calibration against a 43 kg steel shell
+                                    body with a kit screwed into the fuze
+                                    well. 1.5 % of field magnitude and 0.9
+                                    deg of direction is an engineering
+                                    estimate from published air-cored
+                                    ellipsoid-fit results, degraded for the
+                                    steel. Section 5 of
+                                    docs/SENSOR-MODELS.md says what would
+                                    settle it
+  gnss_reacquire_s          LOW     DECIDES WHETHER THE WARM START IS A
+                                    FEATURE. Published hot-start TTFF is
+                                    0.5-20 s and the munition literature
+                                    reports first acquisition at
+                                    approximately 20 s, but no source gives
+                                    a DISTRIBUTION for a 15 000 g launch
+                                    into 208 Hz spin with ephemeris
+                                    pre-loaded. 3-12 s with a 6 s median is
+                                    an estimate
+  gnss_cn0_roll_sigma       LOW     5 deg 1 sigma per fitted revolution is
+                                    an estimate. The published work
+                                    demonstrates the measurement but at spin
+                                    rates, integration times and C/N0 that
+                                    are not this engagement's
+  baro_port_error           LOW     THE REASON THE BAROMETER IS NOT AN
+                                    ALTITUDE SOURCE. The static-port
+                                    pressure coefficient on a spinning shell
+                                    at M 1.5 is not published for this body.
+                                    -0.15 to +0.05 of q_bar is an estimate
+                                    from generic supersonic body pressure
+                                    distributions; at 137 kPa that is up to
+                                    20 kPa, which is over 1 500 m of
+                                    pressure altitude
+
+  The two that decide a reported number:
+    mag_calibration_residual  sets the roll BIAS, which adds one for one to
+                              the servo's 0.58 deg tracking error
+                              (docs/CONTROL-CHARACTERISATION.md sec 4.3).
+    gnss_reacquire_s          decides whether the Task D warm start moves
+                              the solution inside t_dep + 3 s, and so
+                              whether it is a feature at all.
+==============================================================================
+Task D -- the warm start
+Task F -- the navigation contribution to CEP
+    F short2 truth: 10/24    27.3 s  (eta  38.2 s)
+    F short2 truth: 20/24    41.8 s  (eta   8.4 s)
+    F short2 truth: 24/24    42.8 s  (eta   0.0 s)
+    F short2 nav: 10/72    45.9 s  (eta 284.9 s)
+    F short2 nav: 20/72    71.1 s  (eta 184.8 s)
+    F short2 nav: 30/72    96.5 s  (eta 135.0 s)
+    F short2 nav: 40/72   123.4 s  (eta  98.7 s)
+    F short2 nav: 50/72   163.2 s  (eta  71.8 s)
+    F short2 nav: 60/72   191.2 s  (eta  38.2 s)
+    F short2 nav: 70/72   218.9 s  (eta   6.3 s)
+    F short2 nav: 72/72   220.9 s  (eta   0.0 s)
+  short2   truth CEP   42.54 m   nav CEP   42.44 m   contribution 1 sigma range   4.29 m, deflection   1.10 m
+    F middle truth: 10/24    71.0 s  (eta  99.4 s)
+    F middle truth: 20/24   110.1 s  (eta  22.0 s)
+    F middle truth: 24/24   112.5 s  (eta   0.0 s)
+    F middle nav: 10/72   118.4 s  (eta 734.0 s)
+    F middle nav: 20/72   183.9 s  (eta 478.1 s)
+    F middle nav: 30/72   249.4 s  (eta 349.2 s)
+    F middle nav: 40/72   316.9 s  (eta 253.5 s)
+    F middle nav: 50/72   391.4 s  (eta 172.2 s)
+    F middle nav: 60/72   467.9 s  (eta  93.6 s)
+    F middle nav: 70/72   521.4 s  (eta  14.9 s)
+    F middle nav: 72/72   524.9 s  (eta   0.0 s)
+  middle   truth CEP   53.33 m   nav CEP   68.03 m   contribution 1 sigma range  17.58 m, deflection   6.32 m
+    F mid2 truth: 10/24    91.8 s  (eta 128.5 s)
+    F mid2 truth: 20/24   139.5 s  (eta  27.9 s)
+    F mid2 truth: 24/24   141.3 s  (eta   0.0 s)
+    F mid2 nav: 10/72   149.2 s  (eta 925.3 s)
+    F mid2 nav: 20/72   223.0 s  (eta 579.8 s)
+    F mid2 nav: 30/72   296.7 s  (eta 415.4 s)
+    F mid2 nav: 40/72   373.2 s  (eta 298.6 s)
+    F mid2 nav: 50/72   531.7 s  (eta 233.9 s)
+    F mid2 nav: 60/72   621.0 s  (eta 124.2 s)
+    F mid2 nav: 70/72   716.1 s  (eta  20.5 s)
+    F mid2 nav: 72/72   720.9 s  (eta   0.0 s)
+  mid2     truth CEP   63.55 m   nav CEP   58.43 m   contribution 1 sigma range  28.18 m, deflection   7.39 m
+    F long truth: 10/24   110.6 s  (eta 154.9 s)
+    F long truth: 20/24   167.0 s  (eta  33.4 s)
+    F long truth: 24/24   169.1 s  (eta   0.0 s)
+    F long nav: 10/72   179.3 s  (eta 1111.7 s)
+    F long nav: 20/72   270.9 s  (eta 704.4 s)
+    F long nav: 30/72   363.9 s  (eta 509.5 s)
+    F long nav: 40/72   459.9 s  (eta 367.9 s)
+    F long nav: 50/72   617.7 s  (eta 271.8 s)
+    F long nav: 60/72   713.8 s  (eta 142.8 s)
+    F long nav: 70/72   806.3 s  (eta  23.0 s)
+    F long nav: 72/72   810.9 s  (eta   0.0 s)
+  long     truth CEP   60.17 m   nav CEP   35.69 m   contribution 1 sigma range  30.41 m, deflection  11.98 m
+Task G -- degradation
+    G nominal: 10/24   168.1 s  (eta 235.3 s)
+    G nominal: 20/24   259.1 s  (eta  51.8 s)
+    G nominal: 24/24   262.3 s  (eta   0.0 s)
+  nominal          CEP   45.73 m
+    G outage_2s_at_15pct: 10/24   174.0 s  (eta 243.7 s)
+    G outage_2s_at_15pct: 20/24   263.1 s  (eta  52.6 s)
+    G outage_2s_at_15pct: 24/24   267.4 s  (eta   0.0 s)
+  outage_2s_at_15pct       CEP   38.91 m
+    G outage_2s_at_40pct: 10/24   164.8 s  (eta 230.7 s)
+    G outage_2s_at_40pct: 20/24   248.3 s  (eta  49.7 s)
+    G outage_2s_at_40pct: 24/24   251.9 s  (eta   0.0 s)
+  outage_2s_at_40pct       CEP   45.90 m
+    G outage_2s_at_70pct: 10/24   167.0 s  (eta 233.8 s)
+    G outage_2s_at_70pct: 20/24   251.0 s  (eta  50.2 s)
+    G outage_2s_at_70pct: 24/24   255.3 s  (eta   0.0 s)
+  outage_2s_at_70pct       CEP   45.74 m
+    G outage_5s_at_15pct: 10/24   172.8 s  (eta 241.9 s)
+    G outage_5s_at_15pct: 20/24   263.2 s  (eta  52.6 s)
+    G outage_5s_at_15pct: 24/24   267.9 s  (eta   0.0 s)
+  outage_5s_at_15pct       CEP   42.04 m
+    G outage_5s_at_40pct: 10/24   165.4 s  (eta 231.5 s)
+    G outage_5s_at_40pct: 20/24   249.6 s  (eta  49.9 s)
+    G outage_5s_at_40pct: 24/24   254.3 s  (eta   0.0 s)
+  outage_5s_at_40pct       CEP   46.15 m
+    G outage_5s_at_70pct: 10/24   158.3 s  (eta 221.6 s)
+    G outage_5s_at_70pct: 20/24   241.7 s  (eta  48.3 s)
+    G outage_5s_at_70pct: 24/24   243.0 s  (eta   0.0 s)
+  outage_5s_at_70pct       CEP   45.72 m
+    G outage_10s_at_15pct: 10/24   161.2 s  (eta 225.6 s)
+    G outage_10s_at_15pct: 20/24   242.9 s  (eta  48.6 s)
+    G outage_10s_at_15pct: 24/24   245.8 s  (eta   0.0 s)
+  outage_10s_at_15pct      CEP   50.45 m
+    G outage_10s_at_40pct: 10/24   162.1 s  (eta 227.0 s)
+    G outage_10s_at_40pct: 20/24   243.0 s  (eta  48.6 s)
+    G outage_10s_at_40pct: 24/24   245.7 s  (eta   0.0 s)
+  outage_10s_at_40pct      CEP   46.43 m
+    G outage_10s_at_70pct: 10/24   159.7 s  (eta 223.6 s)
+    G outage_10s_at_70pct: 20/24   242.7 s  (eta  48.5 s)
+    G outage_10s_at_70pct: 24/24   244.2 s  (eta   0.0 s)
+  outage_10s_at_70pct      CEP   45.71 m
+    G denied: 10/24   157.5 s  (eta 220.5 s)
+    G denied: 20/24   245.8 s  (eta  49.2 s)
+    G denied: 24/24   250.3 s  (eta   0.0 s)
+  gnss_denied      CEP  252.17 m
+    G mag fault: 10/24   173.8 s  (eta 243.4 s)
+    G mag fault: 20/24   263.0 s  (eta  52.6 s)
+    G mag fault: 24/24   275.4 s  (eta   0.0 s)
+  mag_uncalibrated CEP   93.29 m
+    G cold start: 10/24   158.4 s  (eta 221.7 s)
+    G cold start: 20/24   266.0 s  (eta  53.2 s)
+    G cold start: 24/24   273.5 s  (eta   0.0 s)
+  cold_start       CEP   33.91 m
+wrote docs/nav_cep.json in 6131.0 s

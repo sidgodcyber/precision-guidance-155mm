@@ -1,0 +1,33 @@
+resuming from docs/guidance_map.json: have ['long', 'mid2', 'middle', 'short', 'short2']
+
+=== short: pointing validation, 24 cases ===
+  short pointing: 16/24    47.5 s
+  short pointing: 24/24    69.1 s
+  hold 1.0: pointing rms 4.57 deg, worst 8.53; magnitude rms 8.3 %; cross-track rms 0.04 m
+  hold 0.55: pointing rms 34.05 deg, worst 60.31; magnitude rms 62.9 %; cross-track rms 0.10 m
+
+=== short2: pointing validation, 24 cases ===
+  short2 pointing: 16/24   102.8 s
+  short2 pointing: 24/24   154.3 s
+  hold 1.0: pointing rms 0.69 deg, worst 1.58; magnitude rms 1.0 %; cross-track rms 0.05 m
+  hold 0.55: pointing rms 1.78 deg, worst 3.83; magnitude rms 2.3 %; cross-track rms 0.07 m
+
+=== middle: pointing validation, 24 cases ===
+  middle pointing: 16/24   211.4 s
+  middle pointing: 24/24   321.2 s
+  hold 1.0: pointing rms 1.01 deg, worst 2.37; magnitude rms 1.8 %; cross-track rms 0.85 m
+  hold 0.55: pointing rms 1.12 deg, worst 2.95; magnitude rms 2.2 %; cross-track rms 0.85 m
+
+=== mid2: pointing validation, 24 cases ===
+  mid2 pointing: 16/24   328.2 s
+  mid2 pointing: 24/24   470.7 s
+  hold 1.0: pointing rms 0.86 deg, worst 1.87; magnitude rms 1.6 %; cross-track rms 1.33 m
+  hold 0.55: pointing rms 0.85 deg, worst 1.82; magnitude rms 1.6 %; cross-track rms 1.17 m
+
+=== long: pointing validation, 24 cases ===
+  long pointing: 16/24   402.4 s
+  long pointing: 24/24   657.1 s
+  hold 1.0: pointing rms 0.84 deg, worst 1.61; magnitude rms 1.3 %; cross-track rms 2.58 m
+  hold 0.55: pointing rms 0.78 deg, worst 1.70; magnitude rms 1.2 %; cross-track rms 2.19 m
+
+wrote docs/guidance_map.json  (1675.1 s)

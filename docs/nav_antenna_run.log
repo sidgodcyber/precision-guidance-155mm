@@ -1,0 +1,88 @@
+==============================================================================
+SENSOR MODEL CONFIDENCE -- read before quoting any navigation result
+==============================================================================
+Every error term in gnc/sensors.py is a named line on a named part class.
+The ones graded LOW are ENGINEERING ESTIMATES: no source states them for
+this part in this application, and they are where the model is weakest.
+
+  gyro_bias_repeatability   LOW     turn-on-to-turn-on bias not separately
+                                    stated for this part; taken as 5x the
+                                    in-run figure, the usual tactical-MEMS
+                                    ratio
+  gyro_scale_factor         LOW     ADI quotes sensitivity tolerance and
+                                    tempco separately; 0.5 % is an
+                                    engineering roll-up over the
+                                    qualification temperature band
+  accel_vrw                 LOW     velocity random walk not found as a
+                                    table line; 0.023 m/s/sqrt(s) is the
+                                    usual figure for this noise-density
+                                    class
+  accel_bias_repeatability  LOW     turn-on repeatability not stated; taken
+                                    as 1 mg, the tactical-MEMS norm
+  accel_scale_factor        LOW     engineering roll-up over temperature, as
+                                    gyro_scale_factor
+  mag_calibration_residual  LOW     THE ROLL ERROR FLOOR. No source measures
+                                    the residual of a hard/soft-iron
+                                    calibration against a 43 kg steel shell
+                                    body with a kit screwed into the fuze
+                                    well. 1.5 % of field magnitude and 0.9
+                                    deg of direction is an engineering
+                                    estimate from published air-cored
+                                    ellipsoid-fit results, degraded for the
+                                    steel. Section 5 of
+                                    docs/SENSOR-MODELS.md says what would
+                                    settle it
+  gnss_reacquire_s          LOW     DECIDES WHETHER THE WARM START IS A
+                                    FEATURE. Published hot-start TTFF is
+                                    0.5-20 s and the munition literature
+                                    reports first acquisition at
+                                    approximately 20 s, but no source gives
+                                    a DISTRIBUTION for a 15 000 g launch
+                                    into 208 Hz spin with ephemeris
+                                    pre-loaded. 3-12 s with a 6 s median is
+                                    an estimate
+  gnss_cn0_roll_sigma       LOW     5 deg 1 sigma per fitted revolution is
+                                    an estimate. The published work
+                                    demonstrates the measurement but at spin
+                                    rates, integration times and C/N0 that
+                                    are not this engagement's
+  baro_port_error           LOW     THE REASON THE BAROMETER IS NOT AN
+                                    ALTITUDE SOURCE. The static-port
+                                    pressure coefficient on a spinning shell
+                                    at M 1.5 is not published for this body.
+                                    -0.15 to +0.05 of q_bar is an estimate
+                                    from generic supersonic body pressure
+                                    distributions; at 137 kPa that is up to
+                                    20 kPa, which is over 1 500 m of
+                                    pressure altitude
+
+  The two that decide a reported number:
+    mag_calibration_residual  sets the roll BIAS, which adds one for one to
+                              the servo's 0.58 deg tracking error
+                              (docs/CONTROL-CHARACTERISATION.md sec 4.3).
+    gnss_reacquire_s          decides whether the Task D warm start moves
+                              the solution inside t_dep + 3 s, and so
+                              whether it is a feature at all.
+==============================================================================
+    truth: 10/24   101.8 s  (eta 142.5 s)
+    truth: 20/24   157.8 s  (eta  31.6 s)
+    truth: 24/24   161.7 s  (eta   0.0 s)
+    antenna 0 mm: 10/48   165.6 s  (eta 629.3 s)
+    antenna 0 mm: 20/48   250.8 s  (eta 351.2 s)
+    antenna 0 mm: 30/48   339.3 s  (eta 203.6 s)
+    antenna 0 mm: 40/48   424.4 s  (eta  84.9 s)
+    antenna 0 mm: 48/48   506.0 s  (eta   0.0 s)
+  antenna   0.0 mm:  range 1 sigma  24.50 m, deflection   8.54 m, velocity rms [0.103 0.117 0.117]
+    antenna 10 mm: 10/48   167.6 s  (eta 636.9 s)
+    antenna 10 mm: 20/48   254.1 s  (eta 355.8 s)
+    antenna 10 mm: 30/48   340.8 s  (eta 204.5 s)
+    antenna 10 mm: 40/48   430.9 s  (eta  86.2 s)
+    antenna 10 mm: 48/48   510.2 s  (eta   0.0 s)
+  antenna  10.0 mm:  range 1 sigma  31.98 m, deflection  12.71 m, velocity rms [0.449 0.724 0.632]
+    antenna 40 mm: 10/48   164.0 s  (eta 623.1 s)
+    antenna 40 mm: 20/48   249.6 s  (eta 349.5 s)
+    antenna 40 mm: 30/48   337.8 s  (eta 202.7 s)
+    antenna 40 mm: 40/48   425.2 s  (eta  85.0 s)
+    antenna 40 mm: 48/48   502.0 s  (eta   0.0 s)
+  antenna  40.0 mm:  range 1 sigma  63.24 m, deflection  13.88 m, velocity rms [0.756 1.87  1.75 ]
+wrote docs/nav_antenna.json in 1680.0 s
