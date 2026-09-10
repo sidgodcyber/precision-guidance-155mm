@@ -1,0 +1,25 @@
+keep-awake: system sleep suppressed for this process
+[C] atmospheric knowledge, long, n=128, met x1.0, truth-fed
+  drew 128 rounds (53.1 s: a fire-control solution and a fuze setting each)
+  C/perfect: 16/128    158.3 s  (eta 1108.2 s)
+  C/perfect: 32/128    327.2 s  (eta  981.6 s)
+  C/perfect: 48/128    498.2 s  (eta  830.4 s)
+  C/perfect: 64/128    613.9 s  (eta  613.9 s)
+  C/perfect: 80/128    727.8 s  (eta  436.7 s)
+  C/perfect: 96/128    846.8 s  (eta  282.3 s)
+  C/perfect: 112/128    974.6 s  (eta  139.2 s)
+  C/perfect: 128/128   1082.9 s  (eta    0.0 s)
+    perfect   CEP    0.61 m  sd_range   49.00  sd_defl  12.15  bias_range   -21.46
+  drew 128 rounds (29.7 s: a fire-control solution and a fuze setting each)
+  C/2h: 16/128    118.6 s  (eta  830.2 s)
+  C/2h: 32/128    234.0 s  (eta  701.9 s)
+  C/2h: 48/128    347.0 s  (eta  578.3 s)
+  C/2h: 64/128    465.5 s  (eta  465.5 s)
+  C/2h: 80/128    578.6 s  (eta  347.2 s)
+  C/2h: 96/128    694.0 s  (eta  231.3 s)
+  C/2h: 112/128    815.2 s  (eta  116.5 s)
+  C/2h: 128/128    915.5 s  (eta    0.0 s)
+    2h        CEP   51.76 m  sd_range  122.48  sd_defl  27.21  bias_range    -9.26
+    -> 2h        knowledge term  1 sigma range  126.60 m  deflection  26.89 m
+wrote docs/monte_carlo.json
+total 2082.9 s
