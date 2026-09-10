@@ -452,7 +452,7 @@ now measured rather than assumed:**
 
 | | as published | measured here |
 |---|---|---|
-| the atmospheric term | ~10 m (external reviewer, step 2, mislabelled) | **148 m** of range 1σ at a 2 h message |
+| the atmospheric term | ~10 m (external reviewer, step 2, mislabelled) | **148 m** of range 1σ at a 2 h message, **126.6 m** without the dispersion top-up |
 | the uncorrected dispersion | CEP 200 m, 3:1, assumed since step 2.5 | **142.9 m**, axis ratio **2.34** |
 
 **The band, not the point.** Aleatoric terms are inside the CEP; epistemic ones
@@ -790,7 +790,14 @@ Read these before quoting any number from this model.
    still. **Step 6 priced all three, and the atmospheric one is larger than
    everything else in this list put together: 148 m of range 1σ at a
    two-hour-old met message, against the ~10 m an external reviewer estimated.
-   The headline CEP is 106.2 m.**
+   The headline CEP is 106.2 m.** A control campaign flown afterwards, paired
+   per round with the calibrated dispersion top-up removed, puts that term at
+   **126.6 m** rather than 148 m — a real reduction of 21.4 m whose mechanism
+   is **not** established, with two candidates proposed and both refuted
+   ([ATMOSPHERIC-ERROR.md §2.5](docs/ATMOSPHERIC-ERROR.md)). About 14 % of the
+   148 m is the calibration rather than the met message. It changes the
+   magnitude and not the ordering: 126.6 m is still more than four times the
+   requirement and still the largest term in the budget.
    [CEP-FINAL.md](docs/CEP-FINAL.md), [NAV-CEP.md](docs/NAV-CEP.md),
    [CEP-CLOSED-LOOP.md §1](docs/CEP-CLOSED-LOOP.md).
 14aa. **The largest navigation-attributed error is a guidance-law threshold,
