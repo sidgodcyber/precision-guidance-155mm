@@ -11,7 +11,23 @@ live via `setter.simulation_adapter`. See that module and
 `setter/campaign.py` for the boundary against the frozen simulation engine.
 """
 
+
 from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+# `streamlit run setter/app.py` execs this file directly and only puts its
+# OWN directory (`setter/`) on sys.path (see
+# `streamlit.web.bootstrap._fix_sys_path`) -- never the repository root. That
+# leaves `import setter` and `import fuze` unresolvable even though this file
+# lives inside the `setter` package, because the package's PARENT directory
+# was never added. pytest/AppTest never hit this: pytest puts the repo root
+# on sys.path for the whole test process, which masked it there. Put the
+# repo root on sys.path before importing anything from `setter`/`fuze`.
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 import json
 

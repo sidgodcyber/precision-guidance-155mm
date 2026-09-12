@@ -14,6 +14,8 @@ Run:  python -m pytest tests -q
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -23,6 +25,7 @@ from setter import campaign
 from setter.config import MET_AGE_BUCKETS, SUPPORTED_ENGAGEMENTS
 
 APP_PATH = Path(__file__).resolve().parent.parent / "setter" / "app.py"
+REPO_ROOT = APP_PATH.parent.parent
 
 
 def _fresh_app() -> AppTest:
@@ -38,6 +41,54 @@ def _fresh_app() -> AppTest:
 def test_app_starts_without_exception():
     at = _fresh_app()
     assert at.title[0].value == "SIMULATION SETTER"
+
+
+def test_app_importable_under_real_streamlit_run_sys_path():
+    """Regression test for the launch defect found in Phase 3:
+    `streamlit run setter/app.py` execs the file directly and puts only its
+    OWN directory on `sys.path` (`streamlit.web.bootstrap._fix_sys_path`) --
+    never the repository root. `AppTest`/pytest can never catch this,
+    because the process running them already has the repo root on
+    `sys.path` for unrelated reasons (pytest's own rootdir handling, or
+    `python -c`'s implicit cwd entry). This test runs in an isolated
+    subprocess with a `sys.path` built the same way Streamlit's bootstrap
+    builds it -- script directory only, no cwd, no inherited PYTHONPATH --
+    and simply imports app.py's module-level code up to (not including) the
+    first Streamlit-runtime call, to confirm `setter`/`fuze` resolve."""
+    probe = f"""
+import sys
+# `python -c` auto-adds cwd as '' at sys.path[0]; strip that AND the repo
+# root out first, then reproduce exactly what
+# streamlit.web.bootstrap._fix_sys_path does: insert only the script's own
+# directory. What remains (stdlib, site-packages) is untouched.
+_repo_root = {str(REPO_ROOT)!r}
+sys.path = [p for p in sys.path if p not in ('', _repo_root)]
+sys.path.insert(0, {str(APP_PATH.parent)!r})
+
+import ast
+app_path = {str(APP_PATH)!r}
+source = open(app_path).read()
+tree = ast.parse(source)
+import_nodes = [n for n in tree.body if isinstance(n, (ast.Import, ast.ImportFrom))]
+# Exec the file's source up to and including the LAST top-level import --
+# not just the import nodes in isolation -- so any non-import statement
+# sitting between imports (such as the sys.path repair itself) still runs.
+# This is what would actually execute before app.py reaches its first
+# Streamlit-runtime call, which is as far as this probe needs to go.
+cutoff_line = import_nodes[-1].end_lineno
+prefix_source = \"\\n\".join(source.splitlines()[:cutoff_line])
+exec(compile(prefix_source, app_path, "exec"), {{"__name__": "__main__", "__file__": app_path}})
+print("IMPORTS_OK")
+"""
+    import os
+    env = os.environ.copy()
+    env.pop("PYTHONPATH", None)
+    result = subprocess.run(
+        [sys.executable, "-c", probe], cwd=str(REPO_ROOT), env=env,
+        capture_output=True, text=True, timeout=60)
+    assert "IMPORTS_OK" in result.stdout, (
+        f"app.py's imports failed under a real streamlit-run-style sys.path.\n"
+        f"stdout: {result.stdout}\nstderr: {result.stderr}")
 
 
 # ===========================================================================
