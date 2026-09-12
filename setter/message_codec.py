@@ -3,10 +3,16 @@ Deterministic canonical-JSON encoding and CRC32 checksumming for
 `setter.schemas.SetterMessage`.
 
 Format v1 is JSON, compact separators, keys sorted -- so two calls encoding
-the same message content always produce byte-identical output. The checksum
-covers the canonical body WITHOUT the `checksum` field itself (a field can't
-authenticate its own value), then the field is filled in and the message is
-re-serialized, still canonically, for transport.
+the same message CONTENT always produce byte-identical output and the same
+checksum. The checksum covers the canonical body WITHOUT `checksum` itself (a
+field can't authenticate its own value) and WITHOUT `generated_at`: that
+field is generation provenance (wall-clock time the message was built), not
+configuration content, and two messages built a second apart from an
+otherwise identical engagement/met-profile/simulation/event configuration
+must produce the SAME checksum -- that is the reproducibility property Phase
+2 characterization checks for (`tests/test_setter_reproducibility.py`). An
+earlier version of this module included `generated_at` in the checksummed
+body, which broke exactly that property; kept out here deliberately.
 """
 
 from __future__ import annotations
@@ -21,11 +27,16 @@ __all__ = [
     "canonical_body", "compute_checksum", "encode", "decode", "verify_checksum",
 ]
 
+#: Fields excluded from the checksummed canonical body: `checksum` because a
+#: field cannot authenticate its own value, `generated_at` because it is
+#: generation provenance, not configuration content (see module docstring).
+_CHECKSUM_EXCLUDED_FIELDS = {"checksum", "generated_at"}
+
 
 def canonical_body(message: SetterMessage) -> bytes:
     """The canonical JSON body used for checksumming: alias field names,
-    `checksum` excluded, keys sorted, compact separators."""
-    body = message.model_dump(by_alias=True, exclude={"checksum"})
+    `_CHECKSUM_EXCLUDED_FIELDS` excluded, keys sorted, compact separators."""
+    body = message.model_dump(by_alias=True, exclude=_CHECKSUM_EXCLUDED_FIELDS)
     return json.dumps(body, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
 

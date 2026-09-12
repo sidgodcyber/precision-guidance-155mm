@@ -1,0 +1,63 @@
+{
+ "provenance": {
+  "commit": "3e45e5028266a9e73e293e4c547c483059dffc7c",
+  "timestamp": "2026-09-12T08:07:02.026324+00:00",
+  "source_data_file": "docs/monte_carlo.json"
+ },
+ "per_engagement": {
+  "short": {
+   "validation_status": "valid",
+   "message_size_bytes": 3693,
+   "checksum": "b6e15ed3",
+   "round_trip_ok": true,
+   "checksum_verified": true,
+   "met_profile_fields_complete": true,
+   "met_profile_grid_points": 33
+  },
+  "short2": {
+   "validation_status": "valid",
+   "message_size_bytes": 3698,
+   "checksum": "90f330a5",
+   "round_trip_ok": true,
+   "checksum_verified": true,
+   "met_profile_fields_complete": true,
+   "met_profile_grid_points": 33
+  },
+  "middle": {
+   "validation_status": "valid",
+   "message_size_bytes": 3694,
+   "checksum": "7fce8fd9",
+   "round_trip_ok": true,
+   "checksum_verified": true,
+   "met_profile_fields_complete": true,
+   "met_profile_grid_points": 33
+  },
+  "mid2": {
+   "validation_status": "valid",
+   "message_size_bytes": 3690,
+   "checksum": "8e7c9309",
+   "round_trip_ok": true,
+   "checksum_verified": true,
+   "met_profile_fields_complete": true,
+   "met_profile_grid_points": 33
+  },
+  "long": {
+   "validation_status": "valid",
+   "message_size_bytes": 3689,
+   "checksum": "f2b960ea",
+   "round_trip_ok": true,
+   "checksum_verified": true,
+   "met_profile_fields_complete": true,
+   "met_profile_grid_points": 33
+  }
+ },
+ "sensitivity": {
+  "single_field_change_changes_checksum": true
+ },
+ "rejection_checks": {
+  "tampered_checksum_rejected": true,
+  "missing_required_field_rejected": true,
+  "unsupported_engagement_rejected": true,
+  "malformed_json_rejected": true
+ }
+}

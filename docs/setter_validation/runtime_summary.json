@@ -1,0 +1,65 @@
+{
+ "provenance": {
+  "commit": "3e45e5028266a9e73e293e4c547c483059dffc7c",
+  "timestamp": "2026-09-12T08:06:56.690171+00:00",
+  "source_data_file": "docs/monte_carlo.json"
+ },
+ "single_trajectory": {
+  "short": {
+   "median_s": 0.029606000054627657,
+   "max_s": 0.6922140999231488,
+   "min_s": 0.021140299970284104,
+   "n_samples": 5,
+   "n_logged_points": 129,
+   "range_m": 2017.4865815948597,
+   "duration_s": 6.378499360035615
+  },
+  "short2": {
+   "median_s": 0.04279430001042783,
+   "max_s": 0.6574393999762833,
+   "min_s": 0.04042820003814995,
+   "n_samples": 5,
+   "n_logged_points": 272,
+   "range_m": 4034.0419416256123,
+   "duration_s": 13.539681072545
+  },
+  "middle": {
+   "median_s": 0.11649339995346963,
+   "max_s": 0.7024712000275031,
+   "min_s": 0.10628700000233948,
+   "n_samples": 5,
+   "n_logged_points": 580,
+   "range_m": 9091.233245946902,
+   "duration_s": 28.921047426439966
+  },
+  "mid2": {
+   "median_s": 0.15127000003121793,
+   "max_s": 0.9272201999556273,
+   "min_s": 0.1274009000044316,
+   "n_samples": 5,
+   "n_logged_points": 852,
+   "range_m": 12970.146015410299,
+   "duration_s": 42.52115654155714
+  },
+  "long": {
+   "median_s": 0.20651429996360093,
+   "max_s": 0.7991884000366554,
+   "min_s": 0.14052530005574226,
+   "n_samples": 5,
+   "n_logged_points": 970,
+   "range_m": 15805.905950560467,
+   "duration_s": 48.41542762710548
+  }
+ },
+ "engagement_context_cache": {
+  "cold_s": 0.7674710999708623,
+  "warm_s": 3.00002284348011e-06
+ },
+ "message_serialization": {
+  "encode_s_per_call": 0.0008520599920302629,
+  "message_size_bytes": 3689
+ },
+ "message_validation": {
+  "validate_s_per_call": 0.0002678000135347247
+ }
+}

@@ -54,6 +54,13 @@ def test_canonical_body_excludes_checksum_field():
     assert "checksum" not in body
 
 
+def test_canonical_body_excludes_generation_timestamp():
+    """`generated_at` is provenance, not configuration content -- see
+    tests/test_setter_reproducibility.py for the property this protects."""
+    body = json.loads(message_codec.canonical_body(_message()))
+    assert "generated_at" not in body
+
+
 # ===========================================================================
 # CRC32 calculation
 # ===========================================================================
