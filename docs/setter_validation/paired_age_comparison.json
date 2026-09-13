@@ -1,0 +1,211 @@
+{
+ "provenance": {
+  "commit": "0f4cba3ee8170fb48da368d80d7ea6f82a1a3f09",
+  "timestamp": "2026-09-13T08:56:38.565746+00:00",
+  "source_data_file": "docs/monte_carlo.json",
+  "analysis_id": "paired-age-comparison",
+  "analysis_version": "1.0.0",
+  "tag": "headline",
+  "engagement": "long",
+  "bootstrap": {
+   "n_boot": 20000,
+   "seed": 606,
+   "method": "percentile, jointly resampled round indices"
+  }
+ },
+ "scope_note": "Offline analysis of already-stored simulation data; docs/monte_carlo.json was not modified and no campaign was re-run. Simulation-only: this characterizes the stored experiment at the 'long' engagement across met-message ages, and does not generalize to other engagements, ages not represented in the data, or real-world munition performance.",
+ "comparisons": {
+  "6h_vs_none": {
+   "comparison": "6h vs none",
+   "age_a": "6h",
+   "age_b": "none",
+   "n_common_rounds": 128,
+   "n_a_total": 128,
+   "n_b_total": 128,
+   "cep_difference": {
+    "delta_m": 8.738858166584976,
+    "lo_m": -33.59258674429598,
+    "hi_m": 55.75066001984064,
+    "se_m": 22.95635142924552,
+    "p_two_sided_ge_0": 0.7573,
+    "n": 128,
+    "n_boot": 20000,
+    "seed": 606
+   },
+   "per_round_differences": {
+    "radial_miss": {
+     "mean_m": 26.572996803111778,
+     "sd_m": 168.15726138398506,
+     "median_m": 23.927355857382807,
+     "abs_p90_m": 290.6895891701993,
+     "n": 128
+    },
+    "range": {
+     "mean_m": 4.430793717303715,
+     "sd_m": 194.55179669952724,
+     "median_m": -7.713637092621866,
+     "abs_p90_m": 298.9477518875941,
+     "n": 128
+    },
+    "deflection": {
+     "mean_m": 0.7845383416271607,
+     "sd_m": 54.41755490315687,
+     "median_m": 3.220860859148871,
+     "abs_p90_m": 81.59191269409233,
+     "n": 128
+    }
+   },
+   "range_axis": {
+    "bias_difference": {
+     "delta_m": 4.430793717303715,
+     "lo_m": -29.033513203847644,
+     "hi_m": 37.99807218391148,
+     "se_m": 17.144272439347166,
+     "p_two_sided_ge_0": 0.7957,
+     "n": 128,
+     "n_boot": 20000,
+     "seed": 606
+    },
+    "sigma_difference": {
+     "delta_m": 40.649712166775515,
+     "lo_m": 2.9455476196199464,
+     "hi_m": 74.97467413312003,
+     "se_m": 18.30632614645274,
+     "p_two_sided_ge_0": 0.0328,
+     "n": 128,
+     "n_boot": 20000,
+     "seed": 606
+    }
+   },
+   "deflection_axis": {
+    "bias_difference": {
+     "delta_m": 0.7845383416271652,
+     "lo_m": -8.633376969207694,
+     "hi_m": 10.028625647315518,
+     "se_m": 4.779860619135371,
+     "p_two_sided_ge_0": 0.8775,
+     "n": 128,
+     "n_boot": 20000,
+     "seed": 606
+    },
+    "sigma_difference": {
+     "delta_m": 5.333594813644439,
+     "lo_m": -6.21948846649886,
+     "hi_m": 16.34732699765785,
+     "se_m": 5.751733714470097,
+     "p_two_sided_ge_0": 0.3454,
+     "n": 128,
+     "n_boot": 20000,
+     "seed": 606
+    }
+   },
+   "variance_bias_decomposition": {
+    "range_sigma_ci_excludes_zero": true,
+    "range_bias_ci_excludes_zero": false,
+    "range_sigma_delta_m": 40.649712166775515,
+    "range_bias_delta_m": 4.430793717303715,
+    "category": "dispersion"
+   },
+   "interpretation": {
+    "cep_interval_excludes_zero": false,
+    "statement": "the paired CEP difference [-33.59, +55.75] m includes zero: the available paired sample does not establish a real difference between '6h' and 'none' at this engagement."
+   }
+  },
+  "3h_vs_6h": {
+   "comparison": "3h vs 6h",
+   "age_a": "3h",
+   "age_b": "6h",
+   "n_common_rounds": 128,
+   "n_a_total": 128,
+   "n_b_total": 128,
+   "cep_difference": {
+    "delta_m": -28.258755489222267,
+    "lo_m": -50.36376008021528,
+    "hi_m": -1.4240912016391007,
+    "se_m": 12.229714245299094,
+    "p_two_sided_ge_0": 0.0393,
+    "n": 128,
+    "n_boot": 20000,
+    "seed": 606
+   },
+   "per_round_differences": {
+    "radial_miss": {
+     "mean_m": -30.555856066670188,
+     "sd_m": 50.54886907189656,
+     "median_m": -20.695705370091666,
+     "abs_p90_m": 103.05548946139028,
+     "n": 128
+    },
+    "range": {
+     "mean_m": -7.756755659903348,
+     "sd_m": 57.62434489758257,
+     "median_m": -1.7849850370339482,
+     "abs_p90_m": 101.33112116336869,
+     "n": 128
+    },
+    "deflection": {
+     "mean_m": 1.449286908314135,
+     "sd_m": 18.56115767006819,
+     "median_m": 0.012629651006932363,
+     "abs_p90_m": 33.302687068944586,
+     "n": 128
+    }
+   },
+   "range_axis": {
+    "bias_difference": {
+     "delta_m": -7.756755659903348,
+     "lo_m": -17.75287135205246,
+     "hi_m": 2.11724336283457,
+     "se_m": 5.0918865365620904,
+     "p_two_sided_ge_0": 0.1264,
+     "n": 128,
+     "n_boot": 20000,
+     "seed": 606
+    },
+    "sigma_difference": {
+     "delta_m": -38.46850881496562,
+     "lo_m": -50.18775782093029,
+     "hi_m": -25.929625941023737,
+     "se_m": 6.239233009487844,
+     "p_two_sided_ge_0": 0.0,
+     "n": 128,
+     "n_boot": 20000,
+     "seed": 606
+    }
+   },
+   "deflection_axis": {
+    "bias_difference": {
+     "delta_m": 1.4492869083141287,
+     "lo_m": -1.7416100533656547,
+     "hi_m": 4.605843754340094,
+     "se_m": 1.6230065498282722,
+     "p_two_sided_ge_0": 0.3685,
+     "n": 128,
+     "n_boot": 20000,
+     "seed": 606
+    },
+    "sigma_difference": {
+     "delta_m": -13.852700964841581,
+     "lo_m": -16.790738828320773,
+     "hi_m": -10.633218032635622,
+     "se_m": 1.5641456583497222,
+     "p_two_sided_ge_0": 0.0,
+     "n": 128,
+     "n_boot": 20000,
+     "seed": 606
+    }
+   },
+   "variance_bias_decomposition": {
+    "range_sigma_ci_excludes_zero": true,
+    "range_bias_ci_excludes_zero": false,
+    "range_sigma_delta_m": -38.46850881496562,
+    "range_bias_delta_m": -7.756755659903348,
+    "category": "dispersion"
+   },
+   "interpretation": {
+    "cep_interval_excludes_zero": true,
+    "statement": "the paired CEP difference [-50.36, -1.42] m excludes zero: the stored simulation experiment establishes a non-zero paired difference over these 128 shared rounds at the '3h'/'6h' met-message ages, 'long' engagement only."
+   }
+  }
+ }
+}

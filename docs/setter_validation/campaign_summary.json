@@ -1,0 +1,190 @@
+{
+ "provenance": {
+  "commit": "3e45e5028266a9e73e293e4c547c483059dffc7c",
+  "timestamp": "2026-09-12T08:06:48.230043+00:00",
+  "source_data_file": "docs/monte_carlo.json"
+ },
+ "task_a": {
+  "description": "navigation-in-loop campaign result",
+  "points": {
+   "headline": {
+    "short": {
+     "available": true,
+     "cep_m": 23.737396461400905,
+     "n": 96,
+     "cep_se_m": 2.3814997393213235,
+     "met_age_hours": 2.0
+    },
+    "short2": {
+     "available": true,
+     "cep_m": 46.62319869371087,
+     "n": 96,
+     "cep_se_m": 4.7843733796256736,
+     "met_age_hours": 2.0
+    },
+    "middle": {
+     "available": true,
+     "cep_m": 81.70984702532544,
+     "n": 96,
+     "cep_se_m": 8.88123005689845,
+     "met_age_hours": 2.0
+    },
+    "mid2": {
+     "available": true,
+     "cep_m": 123.79251576250891,
+     "n": 96,
+     "cep_se_m": 15.353334231771079,
+     "met_age_hours": 2.0
+    },
+    "long": {
+     "available": true,
+     "cep_m": 106.18741604359045,
+     "n": 192,
+     "cep_se_m": 8.678710376293036,
+     "met_age_hours": 2.0
+    }
+   },
+   "fresh_met": {
+    "short": {
+     "available": false,
+     "reason": "Task A has no stored 'fresh_met' point for engagement 'short'"
+    },
+    "short2": {
+     "available": false,
+     "reason": "Task A has no stored 'fresh_met' point for engagement 'short2'"
+    },
+    "middle": {
+     "available": false,
+     "reason": "Task A has no stored 'fresh_met' point for engagement 'middle'"
+    },
+    "mid2": {
+     "available": false,
+     "reason": "Task A has no stored 'fresh_met' point for engagement 'mid2'"
+    },
+    "long": {
+     "available": true,
+     "cep_m": 27.506003874897146,
+     "n": 96,
+     "cep_se_m": 16.900564615662336,
+     "met_age_hours": 0.0
+    }
+   },
+   "physical": {
+    "short": {
+     "available": false,
+     "reason": "Task A has no stored 'physical' point for engagement 'short'"
+    },
+    "short2": {
+     "available": false,
+     "reason": "Task A has no stored 'physical' point for engagement 'short2'"
+    },
+    "middle": {
+     "available": false,
+     "reason": "Task A has no stored 'physical' point for engagement 'middle'"
+    },
+    "mid2": {
+     "available": false,
+     "reason": "Task A has no stored 'physical' point for engagement 'mid2'"
+    },
+    "long": {
+     "available": true,
+     "cep_m": 59.50166800812182,
+     "n": 64,
+     "cep_se_m": 10.626612396935501,
+     "met_age_hours": 2.0
+    }
+   }
+  },
+  "anomaly": {
+   "description": "2h headline CEP does not order monotonically with engagement range -- reported as measured, not smoothed, fitted, or explained.",
+   "headline_2h_cep_m_by_engagement": {
+    "short": 23.737396461400905,
+    "short2": 46.62319869371087,
+    "middle": 81.70984702532544,
+    "mid2": 123.79251576250891,
+    "long": 106.18741604359045
+   }
+  }
+ },
+ "task_c": {
+  "description": "truth-fed atmospheric-knowledge term, navigation excluded",
+  "points": {
+   "headline": {
+    "perfect": {
+     "available": true,
+     "cep_m": 1.7128446367594934,
+     "n": 128
+    },
+    "0h": {
+     "available": true,
+     "cep_m": 12.945893745791189,
+     "n": 128,
+     "cep_contribution_m": 16.286022581321646
+    },
+    "1h": {
+     "available": true,
+     "cep_m": 56.393408742839824,
+     "n": 128,
+     "cep_contribution_m": 60.322203331030025
+    },
+    "2h": {
+     "available": true,
+     "cep_m": 87.99876657589024,
+     "n": 128,
+     "cep_contribution_m": 82.865918048559
+    },
+    "3h": {
+     "available": true,
+     "cep_m": 98.70770615486833,
+     "n": 128,
+     "cep_contribution_m": 99.70116046801455
+    },
+    "6h": {
+     "available": true,
+     "cep_m": 126.9664616440906,
+     "n": 128,
+     "cep_contribution_m": 129.05999041920447
+    },
+    "none": {
+     "available": true,
+     "cep_m": 118.22760347750562,
+     "n": 128,
+     "cep_contribution_m": 118.37705621120585
+    }
+   },
+   "physical": {
+    "perfect": {
+     "available": true,
+     "cep_m": 0.610569415111063,
+     "n": 128
+    },
+    "0h": {
+     "available": false,
+     "reason": "Task C 'physical'/'long' has no '0h' case"
+    },
+    "1h": {
+     "available": false,
+     "reason": "Task C 'physical'/'long' has no '1h' case"
+    },
+    "2h": {
+     "available": true,
+     "cep_m": 51.75632560371979,
+     "n": 128,
+     "cep_contribution_m": 61.85227639083375
+    },
+    "3h": {
+     "available": false,
+     "reason": "Task C 'physical'/'long' has no '3h' case"
+    },
+    "6h": {
+     "available": false,
+     "reason": "Task C 'physical'/'long' has no '6h' case"
+    },
+    "none": {
+     "available": false,
+     "reason": "Task C 'physical'/'long' has no 'none' case"
+    }
+   }
+  }
+ }
+}
