@@ -1,7 +1,7 @@
 {
  "provenance": {
-  "commit": "3e45e5028266a9e73e293e4c547c483059dffc7c",
-  "timestamp": "2026-09-12T08:07:02.026324+00:00",
+  "commit": "043ac83239399c50b0f8d48408953588b4fef738",
+  "timestamp": "2026-09-13T15:55:32.734471+00:00",
   "source_data_file": "docs/monte_carlo.json"
  },
  "per_engagement": {

@@ -131,7 +131,7 @@ def runtime_summary(n_samples: int = 5) -> dict:
 
     # engagement_context cache characterization: first call for a cold label
     # vs a repeated (cached) call.
-    sa.engagement_context.cache_clear()
+    sa.engagement_context.clear()
     t0 = time.perf_counter()
     sa.engagement_context("mid2")
     cold_s = time.perf_counter() - t0

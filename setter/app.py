@@ -134,88 +134,111 @@ st.caption(
 st.divider()
 
 # ===========================================================================
-# Simulation configuration
+# Simulation configuration + message build/validate/export -- one fragment.
+#
+# Everything below is downstream of `engagement`/`met_age_bucket` (set above,
+# outside any fragment -- changing either is a full rerun, correctly, since
+# almost the whole page depends on them) but its OWN widgets -- the event
+# mode and its three parameters -- feed nothing upstream. Before fragments,
+# nudging an event parameter re-ran the whole script: two matplotlib
+# renders, a fresh reduced-order trajectory, and the lay_gun/fuze_setting
+# solve, none of which the event mode touches. Isolating this section in an
+# `@st.fragment` means that interaction now reruns only this: JSON
+# assembly, pydantic validation, and CRC32 -- see Step 1 of the Control Room
+# build order for the measured before/after.
+#
+# `base`/`met_profile`/`lay`/`deploy_time` are read fresh on every full
+# rerun (i.e. whenever engagement/met-age change) and simply persist in
+# closure/session state across the fragment's own reruns, since this
+# function is called once per full script execution and Streamlit reruns
+# only its body -- not the enclosing script -- on its own widgets.
 # ===========================================================================
-st.header("Simulation configuration")
-
 lay = sim_adapter.lay_gun(engagement, met_profile)
 deploy_time = sim_adapter.fuze_setting(engagement, met_profile, lay["dqe_mils"])
 
-st.subheader("Scenario")
-st.json({
-    "scenario_id": engagement,
-    "charge": base["charge"],
-    "qe_mils": base["qe_mils"],
-    "muzzle_velocity_ms": base["muzzle_velocity"],
-    "dqe_mils": lay["dqe_mils"],
-    "daz_mils": lay["daz"],
-    "deploy_time_s": deploy_time,
-    "guided_phase_s": base["guided_phase_s"],
-}, expanded=False)
 
-st.subheader("Environment")
-st.json(met_profile.summary(), expanded=False)
+@st.fragment
+def configuration_and_message_fragment(engagement, met_age_bucket, base, met_profile, lay, deploy_time):
+    st.header("Simulation configuration")
 
-st.subheader("Mode identifier / parameters")
-mode = st.selectbox("Event engine demonstration mode", ["time", "motion", "proximity", "combined"])
-param_cols = st.columns(3)
-event_time_s = param_cols[0].number_input("time_event.event_time_s", value=30.0, min_value=0.0)
-motion_threshold = param_cols[1].number_input("motion_event.threshold", value=50.0, min_value=0.1)
-proximity_trigger = param_cols[2].number_input("proximity_event.trigger_value", value=5.0, min_value=0.0)
+    st.subheader("Scenario")
+    st.json({
+        "scenario_id": engagement,
+        "charge": base["charge"],
+        "qe_mils": base["qe_mils"],
+        "muzzle_velocity_ms": base["muzzle_velocity"],
+        "dqe_mils": lay["dqe_mils"],
+        "daz_mils": lay["daz"],
+        "deploy_time_s": deploy_time,
+        "guided_phase_s": base["guided_phase_s"],
+    }, expanded=False)
 
-event_configuration = EventConfiguration(
-    mode=mode,
-    parameters={
-        "event_time_s": event_time_s,
-        "motion_threshold": motion_threshold,
-        "proximity_trigger_value": proximity_trigger,
-        "precedence": list(EVENT_KINDS),
-    },
-)
+    st.subheader("Environment")
+    st.json(met_profile.summary(), expanded=False)
 
-# ===========================================================================
-# Build + validate the message
-# ===========================================================================
-message = SetterMessage(
-    scenario_id=engagement,
-    reference_position=Position(x_m=0.0, y_m=0.0, z_m=0.0),
-    target_position=Position(x_m=base["uncorrected_range"], y_m=base["uncorrected_drift"], z_m=0.0),
-    met_profile=MetProfileMessage.from_met_profile(met_profile, profile_id=f"{engagement}-{met_age_bucket}"),
-    met_age_hours=sim_adapter.age_bucket_to_hours(met_age_bucket),
-    simulation_config=SimulationConfig(
-        scenario_id=engagement, charge=base["charge"], qe_mils=base["qe_mils"],
-        muzzle_velocity_ms=base["muzzle_velocity"], dqe_mils=lay["dqe_mils"],
-        daz_mils=lay["daz"], deploy_time_s=deploy_time,
-        guided_phase_s=base["guided_phase_s"]),
-    event_configuration=event_configuration,
-)
+    st.subheader("Mode identifier / parameters")
+    mode = st.selectbox("Event engine demonstration mode", ["time", "motion", "proximity", "combined"])
+    param_cols = st.columns(3)
+    event_time_s = param_cols[0].number_input("time_event.event_time_s", value=30.0, min_value=0.0)
+    motion_threshold = param_cols[1].number_input("motion_event.threshold", value=50.0, min_value=0.1)
+    proximity_trigger = param_cols[2].number_input("proximity_event.trigger_value", value=5.0, min_value=0.0)
 
-st.subheader("Validation status")
-try:
-    validate_message_dict(json.loads(message.model_dump_json(by_alias=True)))
-    st.success("Configuration message is valid.")
-    validation_ok = True
-except SetterValidationError as exc:
-    st.error(f"Invalid configuration: {exc}")
-    validation_ok = False
+    event_configuration = EventConfiguration(
+        mode=mode,
+        parameters={
+            "event_time_s": event_time_s,
+            "motion_threshold": motion_threshold,
+            "proximity_trigger_value": proximity_trigger,
+            "precedence": list(EVENT_KINDS),
+        },
+    )
 
-st.divider()
+    # -----------------------------------------------------------------
+    # Build + validate the message
+    # -----------------------------------------------------------------
+    message = SetterMessage(
+        scenario_id=engagement,
+        reference_position=Position(x_m=0.0, y_m=0.0, z_m=0.0),
+        target_position=Position(x_m=base["uncorrected_range"], y_m=base["uncorrected_drift"], z_m=0.0),
+        met_profile=MetProfileMessage.from_met_profile(met_profile, profile_id=f"{engagement}-{met_age_bucket}"),
+        met_age_hours=sim_adapter.age_bucket_to_hours(met_age_bucket),
+        simulation_config=SimulationConfig(
+            scenario_id=engagement, charge=base["charge"], qe_mils=base["qe_mils"],
+            muzzle_velocity_ms=base["muzzle_velocity"], dqe_mils=lay["dqe_mils"],
+            daz_mils=lay["daz"], deploy_time_s=deploy_time,
+            guided_phase_s=base["guided_phase_s"]),
+        event_configuration=event_configuration,
+    )
 
-# ===========================================================================
-# Serialized configuration
-# ===========================================================================
-st.header("Serialized configuration")
+    st.subheader("Validation status")
+    try:
+        validate_message_dict(json.loads(message.model_dump_json(by_alias=True)))
+        st.success("Configuration message is valid.")
+        validation_ok = True
+    except SetterValidationError as exc:
+        st.error(f"Invalid configuration: {exc}")
+        validation_ok = False
 
-blob, checksum = message_codec.encode(message)
-st.code(blob.decode("utf-8"), language="json")
+    st.divider()
 
-m1, m2, m3 = st.columns(3)
-m1.metric("Message size", f"{len(blob)} bytes")
-m2.metric("CRC32", checksum)
-m3.metric("Round-trip check",
-          "OK" if message_codec.verify_checksum(blob) else "FAILED")
+    # -----------------------------------------------------------------
+    # Serialized configuration
+    # -----------------------------------------------------------------
+    st.header("Serialized configuration")
 
-st.download_button(
-    "Export configuration (.json)", data=blob,
-    file_name=f"setter_{engagement}_{met_age_bucket}.json", mime="application/json",
-    disabled=not validation_ok)
+    blob, checksum = message_codec.encode(message)
+    st.code(blob.decode("utf-8"), language="json")
+
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Message size", f"{len(blob)} bytes")
+    m2.metric("CRC32", checksum)
+    m3.metric("Round-trip check",
+              "OK" if message_codec.verify_checksum(blob) else "FAILED")
+
+    st.download_button(
+        "Export configuration (.json)", data=blob,
+        file_name=f"setter_{engagement}_{met_age_bucket}.json", mime="application/json",
+        disabled=not validation_ok)
+
+
+configuration_and_message_fragment(engagement, met_age_bucket, base, met_profile, lay, deploy_time)

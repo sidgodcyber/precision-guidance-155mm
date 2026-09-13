@@ -33,13 +33,16 @@ def test_baseline_for_long_matches_guidance_map():
 
 
 def test_engagement_context_is_cached():
-    """`functools.lru_cache` on `engagement_context` -- repeated calls for
-    the same label return the identical (not just equal) object."""
+    """`st.cache_resource` on `engagement_context` -- repeated calls for
+    the same label return the identical (not just equal) object, and
+    clearing the cache forces a fresh one on the next call."""
     ctx1 = sim_adapter.engagement_context("middle")
     ctx2 = sim_adapter.engagement_context("middle")
     assert ctx1 is ctx2
-    info = sim_adapter.engagement_context.cache_info()
-    assert info.hits >= 1
+    sim_adapter.engagement_context.clear()
+    ctx3 = sim_adapter.engagement_context("middle")
+    assert ctx3 is not ctx1
+    assert ctx3["base"] == ctx1["base"]
 
 
 def test_lay_gun_standard_atmosphere_is_nominal_lay():

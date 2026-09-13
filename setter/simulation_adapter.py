@@ -8,18 +8,25 @@ functions as-is (`analysis.monte_carlo.lay_gun`, `.fuze_setting`, `.context`;
 of them.
 
 `engagement_context()` is the one expensive call (~700-750 ms cold, per the
-Phase 0 measurement) and is wrapped in `functools.lru_cache`, keyed on the
-engagement label -- a Streamlit-safe cache, since it lives at module scope
-and is shared across reruns/sessions in the same process, and the
-underlying data is constant for a given engagement.
+Phase 0 measurement). It and the guidance-map load behind it are wrapped in
+`st.cache_resource` rather than `functools.lru_cache`: both return objects
+that are read-only downstream (never mutated by callers) and constant for a
+given key, which is exactly what `cache_resource` is for -- and unlike
+`lru_cache`, it is shared across Streamlit sessions in the same process and
+clearable from the UI (see `st.cache_resource.clear()`). `st.cache_resource`
+degrades to a plain in-process cache when there is no active Streamlit
+runtime (e.g. under pytest or `characterization.py`), so it works the same
+way here as it did under `lru_cache`.
+
+Use `.clear()` (the `cache_resource` API), not `functools`' `.cache_clear()`.
 """
 
 from __future__ import annotations
 
-from functools import lru_cache
 from typing import Optional
 
 import numpy as np
+import streamlit as st
 
 from analysis import guidance_cep as gc
 from analysis import monte_carlo as mc
@@ -40,7 +47,7 @@ _AGE_HOURS = {"perfect": None, "0h": 0.0, "1h": 1.0, "2h": 2.0, "3h": 3.0,
               "6h": 6.0, "none": None}
 
 
-@lru_cache(maxsize=1)
+@st.cache_resource
 def _mapdata() -> dict:
     return gc.load_maps(str(GUIDANCE_MAP_PATH))
 
@@ -54,7 +61,7 @@ def _check_engagement(label: str) -> None:
         raise ValueError(f"unsupported engagement {label!r}; supported: {SUPPORTED_ENGAGEMENTS}")
 
 
-@lru_cache(maxsize=8)
+@st.cache_resource
 def engagement_context(label: str) -> dict:
     """`analysis.monte_carlo.context(mapdata, label)`, cached per label."""
     _check_engagement(label)
