@@ -27,7 +27,19 @@ import matplotlib.pyplot as plt
 from fuze.trajectory_adapter import TrajectorySample
 from setter.campaign import KnowledgeTermPoint
 
-__all__ = ["ground_track_figure", "knowledge_term_figure"]
+__all__ = ["ground_track_figure", "knowledge_term_figure", "cep_circle_figure"]
+
+#: ISA-101 colour discipline (see CLAUDE.md / Control Room spec Part A2):
+#: a neutral base, with colour reserved for states that need attention.
+#: `_ACCENT` marks the single most important number on a given screen --
+#: here, the predicted CEP itself. Scatter points and the target are
+#: neutral; amber is reserved for an unresolved/unavailable condition
+#: elsewhere in the UI, never used decoratively in this figure.
+_BG = "#111827"
+_GRID = "#374151"
+_INK = "#9aa5b1"
+_TEXT = "#e5e7eb"
+_ACCENT = "#38bdf8"
 
 
 def ground_track_figure(sample: TrajectorySample, label: str) -> plt.Figure:
@@ -71,5 +83,47 @@ def knowledge_term_figure(points: List[KnowledgeTermPoint],
     ax.set_ylabel("CEP, m (truth-fed, navigation excluded)")
     ax.set_title("atmospheric knowledge term -- Task C")
     ax.grid(alpha=0.3)
+    fig.tight_layout()
+    return fig
+
+
+def cep_circle_figure(scatter_m: List[tuple], cep_m: float, axis_limit_m: float,
+                       engagement: str, age_label: str) -> plt.Figure:
+    """A to-scale top-down view: the target at the origin, a circle at the
+    stored campaign CEP, and that campaign's own per-round impact scatter
+    (range-miss, deflection-miss), all in metres from the target.
+
+    `axis_limit_m` is a FIXED reference (see
+    `setter.campaign.task_a_max_miss_m`), not fit to `scatter_m` -- so the
+    circle's size change between met ages is to scale, not a relabelled
+    graphic on a rescaling frame. Dark, transparent background per the
+    Control Room spec's dark-theme rule.
+    """
+    fig, ax = plt.subplots(figsize=(5, 5))
+    fig.patch.set_alpha(0.0)
+    ax.set_facecolor(_BG)
+
+    if scatter_m:
+        xs, ys = zip(*scatter_m)
+        ax.scatter(xs, ys, s=12, c=_INK, alpha=0.55, linewidths=0, zorder=2,
+                   label=f"campaign impacts, stored (n={len(scatter_m)})")
+
+    circle = plt.Circle((0, 0), cep_m, fill=False, edgecolor=_ACCENT, linewidth=2.2, zorder=3)
+    ax.add_patch(circle)
+    ax.scatter([0], [0], marker="+", s=160, c=_TEXT, linewidths=2, zorder=4, label="target")
+
+    ax.set_xlim(-axis_limit_m, axis_limit_m)
+    ax.set_ylim(-axis_limit_m, axis_limit_m)
+    ax.set_aspect("equal", adjustable="box")
+    ax.set_xlabel("range miss, m", color=_INK)
+    ax.set_ylabel("deflection miss, m", color=_INK)
+    ax.set_title(f"{engagement} -- met age {age_label}", color=_TEXT)
+    ax.tick_params(colors=_INK)
+    for spine in ax.spines.values():
+        spine.set_color(_GRID)
+    ax.grid(alpha=0.3, color=_GRID)
+    legend = ax.legend(loc="upper right", fontsize=7, facecolor=_BG, edgecolor=_GRID)
+    for text in legend.get_texts():
+        text.set_color(_TEXT)
     fig.tight_layout()
     return fig

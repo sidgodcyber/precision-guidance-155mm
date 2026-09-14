@@ -28,6 +28,7 @@ from setter.config import MET_AGE_BUCKETS, MONTE_CARLO_PATH, SUPPORTED_ENGAGEMEN
 __all__ = [
     "CampaignPoint", "KnowledgeTermPoint",
     "task_a_point", "task_a_by_age", "task_a_headline_table",
+    "task_a_scatter", "task_a_max_miss_m",
     "task_c_point", "task_c_curve",
 ]
 
@@ -115,6 +116,33 @@ def task_a_by_age(engagement: str, met_age_hours: float) -> CampaignPoint:
             met_age_hours=met_age_hours,
             reason=f"Task A has no stored campaign point at met age {met_age_hours} h")
     return task_a_point(engagement, tag)
+
+
+def task_a_scatter(engagement: str, tag: str = "headline") -> list:
+    """Per-round (range-miss, deflection-miss) pairs, metres, for one Task A
+    engagement/tag -- the campaign's own stored impact scatter, drawn for
+    the CEP-circle view. Not a live simulation result; empty (not
+    fabricated) for a combination the campaign never flew.
+    """
+    _check_engagement(engagement)
+    if tag not in TASK_A_TAGS:
+        raise ValueError(f"unsupported Task A tag {tag!r}; supported: {TASK_A_TAGS}")
+    entry = _data()["a"].get(tag, {}).get(engagement)
+    if entry is None:
+        return []
+    return [(row["miss_range_m"], row["miss_defl_m"]) for row in entry.get("rows", [])]
+
+
+def task_a_max_miss_m() -> float:
+    """The single largest stored Task A round miss distance, across every
+    engagement and tag -- a fixed reference radius so a CEP-circle plot's
+    axes never rescale between engagements or met ages (a circle that grows
+    against a shrinking frame is not to scale)."""
+    worst = 0.0
+    for tag_entries in _data()["a"].values():
+        for entry in tag_entries.values():
+            worst = max(worst, entry.get("guided", {}).get("max_m", 0.0))
+    return worst
 
 
 def task_a_headline_table() -> dict:

@@ -31,12 +31,13 @@ if str(_REPO_ROOT) not in sys.path:
 
 import json
 
+import matplotlib.pyplot as plt
 import streamlit as st
 
 from fuze.config import EVENT_KINDS
 from setter import campaign, message_codec, simulation_adapter as sim_adapter
 from setter.config import MET_AGE_BUCKETS, SUPPORTED_ENGAGEMENTS
-from setter.plotting import ground_track_figure, knowledge_term_figure
+from setter.plotting import cep_circle_figure, ground_track_figure, knowledge_term_figure
 from setter.schemas import (EventConfiguration, MetProfileMessage, Position,
                              SetterMessage, SimulationConfig)
 from setter.validation import SetterValidationError, validate_message_dict
@@ -65,6 +66,82 @@ st.write(
     f"**{engagement}** -- charge {base['charge']}, "
     f"QE {base['qe_mils']:.1f} mils, muzzle velocity {base['muzzle_velocity']:.0f} m/s, "
     f"uncorrected range {base['uncorrected_range']:.0f} m")
+
+st.divider()
+
+# ===========================================================================
+# L2 centre panel -- predicted accuracy, as one fragment.
+#
+# The met-age slider lives INSIDE this fragment (a second, local control,
+# separate from the top-level one above that still drives the Task C
+# section and trajectory view below): the spec requires that dragging it
+# rerun only this panel, and a widget outside a fragment cannot do that --
+# any widget driving a fragment-scoped rerun has to live inside the
+# fragment. `engagement` is read from the TOP-level selectbox above (not
+# re-declared here): changing it is already a full rerun, which is correct
+# since it is upstream of nearly everything on the page, so this fragment
+# simply receives the current value as an argument, as in the Step 1
+# configuration fragment.
+#
+# The two sliders will be reconciled in Step 3, when the rest of L2 (Left/
+# Centre/Right Mission Control) replaces this transitional layout.
+# ===========================================================================
+@st.fragment
+def cep_prediction_fragment(engagement: str):
+    st.header("Predicted accuracy")
+    st.caption(
+        "Stored Task A campaign statistic (navigation-in-loop) for the ages "
+        "this engagement actually flew -- not a live simulation result.")
+
+    age_bucket = st.select_slider(
+        "Meteorological message age", options=MET_AGE_BUCKETS, value="2h",
+        key="cep_panel_met_age",
+        help="Looks up a stored Task A campaign point for this engagement "
+             "and age. Ages the campaign did not fly report unavailable "
+             "rather than an interpolated number -- it does not launch a "
+             "new Monte Carlo campaign.")
+
+    hours = sim_adapter.age_bucket_to_hours(age_bucket)
+    if hours is None:
+        point = campaign.CampaignPoint(
+            available=False, engagement=engagement, tag="", met_age_hours=None,
+            reason=f"Task A has no stored campaign point for met-age bucket "
+                   f"{age_bucket!r} (it carries no message-age hours to look up).")
+    else:
+        point = campaign.task_a_by_age(engagement, hours)
+
+    col_number, col_circle = st.columns([1, 2])
+    with col_number:
+        if point.available:
+            st.metric("Predicted CEP", f"{point.cep_m:.1f} m")
+            st.caption(
+                f"**{engagement}** · met age **{age_bucket}** · "
+                f"n={point.n} guided rounds"
+                + (f" · SE {point.cep_se_m:.1f} m" if point.cep_se_m is not None else ""))
+        else:
+            st.metric("Predicted CEP", "unavailable")
+            st.caption(point.reason)
+
+    with col_circle:
+        axis_limit_m = campaign.task_a_max_miss_m() * 1.08
+        if point.available:
+            scatter = campaign.task_a_scatter(engagement, point.tag)
+            fig = cep_circle_figure(scatter, point.cep_m, axis_limit_m, engagement, age_bucket)
+            st.pyplot(fig)
+            plt.close(fig)  # this fragment redraws on every slider drag within
+                             # one session -- unlike the once-per-full-rerun
+                             # figures elsewhere, an unclosed Figure here leaks.
+        else:
+            st.info(f"No stored campaign scatter for {engagement!r} at met age {age_bucket!r}.")
+
+    st.caption(
+        "Headline finding (CLAUDE.md): 106.2 m at a two-hour-old met message "
+        "vs 27.5 m with met uploaded at fuze setting, long engagement -- each "
+        "reported with its own n, not claimed as compliance against the 30 m "
+        "requirement.")
+
+
+cep_prediction_fragment(engagement)
 
 st.divider()
 
