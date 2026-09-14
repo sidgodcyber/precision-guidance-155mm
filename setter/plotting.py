@@ -122,7 +122,13 @@ def cep_circle_figure(scatter_m: List[tuple], cep_m: float, axis_limit_m: float,
     for spine in ax.spines.values():
         spine.set_color(_GRID)
     ax.grid(alpha=0.3, color=_GRID)
-    legend = ax.legend(loc="upper right", fontsize=7, facecolor=_BG, edgecolor=_GRID)
+    # Placed BELOW the axes, not in a corner: the scatter is real campaign
+    # data, and which corner it spreads toward varies by engagement/met age
+    # (e.g. mid2/middle both reach into the upper right at their headline
+    # point) -- a fixed corner will eventually sit on top of points for some
+    # combination. Below the frame never collides, regardless of the data.
+    legend = ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=2,
+                       fontsize=7, facecolor=_BG, edgecolor=_GRID, frameon=True)
     for text in legend.get_texts():
         text.set_color(_TEXT)
     fig.tight_layout()
