@@ -11,6 +11,11 @@ call per path (`setter.provenance`); running a script goes through
 Campaign-class entries and `migrate_c_tag` (fast, but writes the protected
 `docs/monte_carlo.json` in place) show their command line instead of a
 button, regardless of what this page's own logic does.
+
+Registered in `setter/app.py` as a FILE-based `st.Page` (see the note in
+`setter/pages/mission_control.py` on why); `render()` still calls
+unconditionally at the bottom of this file, but stays a plain function so
+it can also be unit-tested by calling it directly.
 """
 
 from __future__ import annotations
@@ -124,3 +129,6 @@ def render() -> None:
         st.header(_SUBSYSTEM_TITLES.get(subsystem, subsystem))
         for entry in entries:
             _entry_card(entry)
+
+
+render()

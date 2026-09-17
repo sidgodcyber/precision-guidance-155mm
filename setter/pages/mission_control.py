@@ -7,6 +7,16 @@ Step 4 introduced `st.navigation` (see that module) so the Archive screen
 (`setter/pages/archive.py`) could exist alongside it. Nothing about the
 Mission Control fragment's behaviour changed in that move -- only where its
 code lives.
+
+Registered in `setter/app.py` as a FILE-based `st.Page` (not a callable):
+`AppTest.switch_page()` only resolves file-based pages -- confirmed against
+the installed Streamlit, where a callable-based `st.Page` raises "Could not
+find a navigation page" from `switch_page` -- and Step 6 onward needs page
+tests. `render()` stays a plain function (so it can still be unit-tested by
+calling it directly), and the bottom of this file also calls it
+unconditionally, unguarded by `if __name__ == "__main__"`: Streamlit execs
+a file-based page's module top to bottom exactly like the main script, on
+every rerun where this page is active.
 """
 
 from __future__ import annotations
@@ -38,8 +48,13 @@ def render() -> None:
     # down the page, so both must see the new value in the same rerun. A
     # widget declared inside a fragment could not do that -- see the note
     # above `mission_control_fragment`.
+    #
+    # `key="engagement"` (not the default auto-generated key) so the L1
+    # Overview page can read the current mission back out of
+    # `st.session_state["engagement"]` without recomputing anything.
     # =======================================================================
-    engagement = st.selectbox("Engagement", SUPPORTED_ENGAGEMENTS, index=len(SUPPORTED_ENGAGEMENTS) - 1)
+    engagement = st.selectbox("Engagement", SUPPORTED_ENGAGEMENTS,
+                               index=len(SUPPORTED_ENGAGEMENTS) - 1, key="engagement")
     base = sim_adapter.baseline_for(engagement)
 
     st.divider()
@@ -134,6 +149,17 @@ def render() -> None:
                        f"{age_bucket!r} (it carries no message-age hours to look up).")
         else:
             point = campaign.task_a_by_age(engagement, hours)
+
+        # The L1 Overview page's "predicted accuracy" tile reads this back
+        # rather than recomputing it -- same CampaignPoint, not a second
+        # lookup with room to disagree.
+        st.session_state["predicted_cep"] = {
+            "engagement": engagement, "age_bucket": age_bucket,
+            "available": point.available,
+            "cep_m": point.cep_m if point.available else None,
+            "n": point.n if point.available else None,
+            "reason": point.reason if not point.available else None,
+        }
 
         # -------------------------------------------------------------
         # Centre -- the prediction (the hero of the application)
@@ -328,3 +354,6 @@ def render() -> None:
     st.caption(
         f"time of flight {trajectory.duration_s:.1f} s, range {trajectory.range_m:.0f} m, "
         f"met profile: {met_profile.label}")
+
+
+render()

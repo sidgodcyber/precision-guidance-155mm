@@ -29,7 +29,18 @@ REPO_ROOT = APP_PATH.parent.parent
 
 
 def _fresh_app() -> AppTest:
+    """A fresh session, navigated to Mission Control.
+
+    Step 5 made Overview (L1) the default landing page (see setter/app.py),
+    so a plain `.run()` no longer lands here -- every test below is
+    specifically about Mission Control (L2), so this helper does the one
+    navigation step for all of them rather than repeating it 30 times.
+    Overview itself is covered separately in test_setter_overview.py.
+    """
     at = AppTest.from_file(str(APP_PATH))
+    at.run(timeout=60)
+    assert not at.exception, at.exception
+    at.switch_page("pages/mission_control.py")
     at.run(timeout=60)
     assert not at.exception, at.exception
     return at

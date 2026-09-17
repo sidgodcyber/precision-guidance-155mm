@@ -26,20 +26,20 @@ import matplotlib.pyplot as plt
 
 from fuze.trajectory_adapter import TrajectorySample
 from setter.campaign import KnowledgeTermPoint
+from setter.palette import ACCENT as _ACCENT
+from setter.palette import BG as _BG
+from setter.palette import GRID as _GRID
+from setter.palette import INK as _INK
+from setter.palette import TEXT as _TEXT
 
 __all__ = ["ground_track_figure", "knowledge_term_figure", "cep_circle_figure"]
 
-#: ISA-101 colour discipline (see CLAUDE.md / Control Room spec Part A2):
-#: a neutral base, with colour reserved for states that need attention.
-#: `_ACCENT` marks the single most important number on a given screen --
-#: here, the predicted CEP itself. Scatter points and the target are
-#: neutral; amber is reserved for an unresolved/unavailable condition
-#: elsewhere in the UI, never used decoratively in this figure.
-_BG = "#111827"
-_GRID = "#374151"
-_INK = "#9aa5b1"
-_TEXT = "#e5e7eb"
-_ACCENT = "#38bdf8"
+#: ISA-101 colour discipline (see CLAUDE.md / Control Room spec Part A2),
+#: from `setter.palette` -- the app's one colour vocabulary, shared with
+#: every other screen. `_ACCENT` marks the single most important number on
+#: a given screen -- here, the predicted CEP itself. Scatter points and the
+#: target are neutral; amber is reserved for an unresolved/unavailable
+#: condition elsewhere in the UI, never used decoratively in this figure.
 
 
 def ground_track_figure(sample: TrajectorySample, label: str) -> plt.Figure:
