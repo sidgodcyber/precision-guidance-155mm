@@ -22,17 +22,31 @@ every rerun where this page is active.
 from __future__ import annotations
 
 import json
+import os
+import subprocess
+import sys
+import tempfile
+import time
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import streamlit as st
 
 from fuze.config import EVENT_KINDS
 from setter import campaign, message_codec, simulation_adapter as sim_adapter
-from setter.config import MET_AGE_BUCKETS, SUPPORTED_ENGAGEMENTS
-from setter.plotting import cep_circle_figure, ground_track_figure, knowledge_term_figure
+from setter.config import MET_AGE_BUCKETS, REPO_ROOT, SUPPORTED_ENGAGEMENTS
+from setter.plotting import (cep_circle_figure, fire_result_figure,
+                              ground_track_figure, knowledge_term_figure)
 from setter.schemas import (EventConfiguration, MetProfileMessage, Position,
                              SetterMessage, SimulationConfig)
 from setter.validation import SetterValidationError, validate_message_dict
+
+#: A hard ceiling on ONE fired round -- measured cost is ~28-31 s
+#: (analysis.nav_common.run_guided_nav, single call, this machine; see
+#: setter/fire_worker.py's own docstring for how that was traced and
+#: measured, not assumed). 4x margin for a slower machine or a harder
+#: round to converge, same reasoning as setter.runner.DEFAULT_TIMEOUT_S.
+FIRE_TIMEOUT_S = 120
 
 
 def render() -> None:
@@ -280,6 +294,158 @@ def render() -> None:
         }
 
     mission_control_fragment(engagement, base)
+
+    st.divider()
+
+    # =======================================================================
+    # Bottom -- FIRE (Control Room spec Part C / B3).
+    #
+    # One real round through the ACTUAL 6-DOF engine, navigation in the
+    # loop -- not the reduced-order model the "Simulation trajectory"
+    # section below (and the live ground track) uses. Traced, not assumed:
+    # `analysis.monte_carlo.task_a` (the campaign function behind this
+    # project's headline CEP) flies each round via
+    # `analysis.nav_common.run_guided_nav`, called here exactly as the
+    # campaign calls it -- see `setter/fire_worker.py`'s docstring for the
+    # full trace, the measured ~28-31 s cost, and what it does and does not
+    # return (no full state trajectory; `g_log`, the guidance law's own
+    # predicted-impact history, is the closest available substitute).
+    #
+    # `run_every="1s"`, per B1: only this fragment reruns while a round is
+    # in flight, so dragging Mission Control's other controls stays fully
+    # responsive during a 30-second FIRE. Subprocess per B3/B4 -- launched
+    # via `python -m setter.fire_worker`, never imported and called inline
+    # -- with a hard timeout (`FIRE_TIMEOUT_S`) and a Cancel button that
+    # kills it.
+    #
+    # NEVER RUN FROM OVERVIEW OR ARCHIVE: this fragment exists only here.
+    # =======================================================================
+    def _launch_fire(mission: dict) -> dict:
+        out_path = Path(tempfile.gettempdir()) / f"setter_fire_{int(time.time() * 1000)}.json"
+        seed = int.from_bytes(os.urandom(4), "big")
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "setter.fire_worker",
+             "--engagement", mission["engagement"], "--met-age", mission["met_age_bucket"],
+             "--range-offset", str(mission["range_offset_m"]),
+             "--defl-offset", str(mission["defl_offset_m"]),
+             "--fuze-mode", mission["fuze_mode"], "--seed", str(seed), "--out", str(out_path)],
+            cwd=str(REPO_ROOT), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        return {"proc": proc, "out_path": out_path, "start": time.time(),
+                "mission": mission, "seed": seed}
+
+    def _current_mission_for_fire() -> dict:
+        return {
+            "engagement": st.session_state.get("engagement", engagement),
+            "met_age_bucket": st.session_state.get("met_age_bucket", "2h"),
+            "range_offset_m": st.session_state.get("mc_target_range_offset", 0.0),
+            "defl_offset_m": st.session_state.get("mc_target_defl_offset", 0.0),
+            "fuze_mode": st.session_state.get("mc_fuze_mode", "time"),
+        }
+
+    def _render_fired_result(result: dict) -> None:
+        st.subheader("Last FIRE result")
+        m = result
+        st.caption(
+            f"**{m['engagement']}** · met age **{m['met_age_bucket']}** · "
+            f"fuze mode {m['fuze_mode_context_only']} · seed {m['seed']} · "
+            f"real 6-DOF round, {m['elapsed_s']:.1f} s")
+        hours = sim_adapter.age_bucket_to_hours(m["met_age_bucket"])
+        ref_point = (campaign.task_a_by_age(m["engagement"], hours)
+                    if hours is not None else None)
+        cep_ref = ref_point.cep_m if (ref_point and ref_point.available) else campaign.task_a_max_miss_m() * 0.3
+        axis_limit_m = campaign.task_a_max_miss_m() * 1.08
+        col_num, col_fig = st.columns([1, 2])
+        with col_num:
+            st.metric("Miss distance", f"{m['miss_m']:.1f} m")
+            st.caption(f"range miss {m['miss_range_m']:+.1f} m · "
+                      f"deflection miss {m['miss_defl_m']:+.1f} m")
+            st.caption(f"time of flight {m['tof_s']:.1f} s · "
+                      f"deployment at {m['t_dep_actual']:.2f} s")
+            if not m.get("state_trajectory_available", True):
+                st.caption(
+                    "Full 6-DOF state history (ground track, altitude, Mach) "
+                    "is not available from this entry point -- see "
+                    "setter/fire_worker.py. Flight Deck will use the "
+                    "guidance law's own predicted-impact log (`g_log`) "
+                    "instead, stored alongside this result.")
+        with col_fig:
+            fig = fire_result_figure(m["miss_range_m"], m["miss_defl_m"], cep_ref,
+                                     axis_limit_m, m["engagement"], m["met_age_bucket"])
+            st.pyplot(fig)
+            plt.close(fig)
+
+    @st.fragment(run_every="1s")
+    def fire_fragment():
+        # No explicit st.rerun() anywhere in this function, deliberately:
+        # every path that changes state below (launching, cancelling,
+        # timing out, completing) does so INSIDE a rerun that a widget
+        # click or the run_every timer already triggered -- Streamlit
+        # reruns a fragment automatically on either, so forcing another
+        # one is both unnecessary and, for scope="fragment" specifically,
+        # invalid outside a genuine fragment-scoped rerun (confirmed: it
+        # raises StreamlitInvalidLayoutContextError under AppTest's
+        # full-script reruns, which is exactly the kind of rerun a real
+        # browser also performs on e.g. the initial page load). Instead,
+        # each branch that changes `fire_job`/`fired_round` just falls
+        # through to render the new state in the SAME pass.
+        st.header("FIRE")
+        job = st.session_state.get("fire_job")
+
+        if job is None:
+            mission = _current_mission_for_fire()
+            st.caption(
+                "Runs ONE real round through the 6-DOF engine with navigation "
+                "in the loop, at the current mission above -- not the "
+                "reduced-order model the ground track further down this page "
+                "uses. Measured cost: ~28-31 s for one round on this machine. "
+                "Runs as a subprocess so the rest of Mission Control stays "
+                "responsive, and can be cancelled.")
+            if st.button("FIRE", type="primary", key="fire_button"):
+                job = _launch_fire(mission)
+                st.session_state["fire_job"] = job
+                # falls through below to show its status immediately,
+                # rather than waiting up to 1 s for the next timer tick.
+            if job is None:
+                fired = st.session_state.get("fired_round")
+                if fired is not None:
+                    _render_fired_result(fired)
+                return
+
+        proc = job["proc"]
+        elapsed = time.time() - job["start"]
+        if proc.poll() is None:
+            if elapsed > FIRE_TIMEOUT_S:
+                proc.kill()
+                st.session_state.pop("fire_job", None)
+                st.error(f"FIRE timed out after {FIRE_TIMEOUT_S} s and was stopped.")
+                return
+            with st.status(f"Firing… {elapsed:.0f} s elapsed (typically ~28-31 s)",
+                           expanded=True, state="running"):
+                st.caption(
+                    f"{job['mission']['engagement']} · met age "
+                    f"{job['mission']['met_age_bucket']} · seed {job['seed']}")
+                if st.button("Cancel", key="fire_cancel"):
+                    proc.kill()
+                    st.session_state.pop("fire_job", None)
+                    st.warning("Cancelled.")
+            return
+
+        out_path = job["out_path"]
+        try:
+            with open(out_path, encoding="utf-8") as fh:
+                result = json.load(fh)
+        except Exception as exc:
+            result = {"ok": False, "error": f"could not read FIRE output: {exc}"}
+        out_path.unlink(missing_ok=True)
+        st.session_state.pop("fire_job", None)
+        if result.get("ok"):
+            st.session_state["fired_round"] = result
+            st.success(f"FIRE complete in {result['elapsed_s']:.1f} s.")
+            _render_fired_result(result)
+        else:
+            st.error(f"FIRE failed: {result.get('error')}")
+
+    fire_fragment()
 
     st.divider()
 

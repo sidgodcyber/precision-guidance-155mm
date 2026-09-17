@@ -32,7 +32,7 @@ from setter.palette import GRID as _GRID
 from setter.palette import INK as _INK
 from setter.palette import TEXT as _TEXT
 
-__all__ = ["ground_track_figure", "knowledge_term_figure", "cep_circle_figure"]
+__all__ = ["ground_track_figure", "knowledge_term_figure", "cep_circle_figure", "fire_result_figure"]
 
 #: ISA-101 colour discipline (see CLAUDE.md / Control Room spec Part A2),
 #: from `setter.palette` -- the app's one colour vocabulary, shared with
@@ -128,6 +128,53 @@ def cep_circle_figure(scatter_m: List[tuple], cep_m: float, axis_limit_m: float,
     # point) -- a fixed corner will eventually sit on top of points for some
     # combination. Below the frame never collides, regardless of the data.
     legend = ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=2,
+                       fontsize=7, facecolor=_BG, edgecolor=_GRID, frameon=True)
+    for text in legend.get_texts():
+        text.set_color(_TEXT)
+    fig.tight_layout()
+    return fig
+
+
+def fire_result_figure(miss_range_m: float, miss_defl_m: float, cep_m_for_reference: float,
+                       axis_limit_m: float, engagement: str, age_label: str) -> plt.Figure:
+    """A to-scale top-down view for one FIRE result: target, the STORED
+    predicted-CEP circle for context (neutral -- it is the number already
+    shown elsewhere, not new), and this round's own actual impact point
+    (accent-coloured -- the one new, most important thing this view adds),
+    joined by a line labelled with the miss distance.
+
+    Same fixed `axis_limit_m` as `cep_circle_figure` (see
+    `setter.campaign.task_a_max_miss_m`), so a FIRE result and the stored
+    campaign scatter are always visually comparable on the same frame.
+    """
+    fig, ax = plt.subplots(figsize=(5, 5))
+    fig.patch.set_alpha(0.0)
+    ax.set_facecolor(_BG)
+
+    circle = plt.Circle((0, 0), cep_m_for_reference, fill=False, edgecolor=_INK,
+                        linewidth=1.4, linestyle="--", zorder=2,
+                        label=f"predicted CEP, stored ({cep_m_for_reference:.1f} m)")
+    ax.add_patch(circle)
+    ax.scatter([0], [0], marker="+", s=160, c=_TEXT, linewidths=2, zorder=4, label="target")
+
+    ax.plot([0, miss_range_m], [0, miss_defl_m], color=_ACCENT, linewidth=1.2,
+           linestyle=":", zorder=3)
+    miss_m = (miss_range_m ** 2 + miss_defl_m ** 2) ** 0.5
+    ax.scatter([miss_range_m], [miss_defl_m], marker="o", s=90, c=_ACCENT,
+              edgecolors=_TEXT, linewidths=0.8, zorder=5,
+              label=f"actual impact, this round ({miss_m:.1f} m miss)")
+
+    ax.set_xlim(-axis_limit_m, axis_limit_m)
+    ax.set_ylim(-axis_limit_m, axis_limit_m)
+    ax.set_aspect("equal", adjustable="box")
+    ax.set_xlabel("range miss, m", color=_INK)
+    ax.set_ylabel("deflection miss, m", color=_INK)
+    ax.set_title(f"{engagement} -- met age {age_label} -- FIRE result", color=_TEXT)
+    ax.tick_params(colors=_INK)
+    for spine in ax.spines.values():
+        spine.set_color(_GRID)
+    ax.grid(alpha=0.3, color=_GRID)
+    legend = ax.legend(loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=1,
                        fontsize=7, facecolor=_BG, edgecolor=_GRID, frameon=True)
     for text in legend.get_texts():
         text.set_color(_TEXT)
