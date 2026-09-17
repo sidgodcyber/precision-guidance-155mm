@@ -114,8 +114,15 @@ def test_fire_end_to_end_via_ui():
     assert fired["ok"] is True
     assert fired["engagement"] == "long"  # the default mission
     assert fired["miss_m"] >= 0.0
-    assert fired["state_trajectory_available"] is False
+    assert fired["state_trajectory_available"] is True
     assert "g_log" in fired and fired["g_log"] is not None
+    tr = fired["state_trajectory"]
+    assert tr is not None
+    assert len(tr["t"]) > 0
+    assert len(tr["position"]) == len(tr["t"])
+    assert len(tr["mach"]) == len(tr["t"])
+    # guided phase only: starts at deployment, not at the muzzle
+    assert tr["t"][0] == pytest.approx(fired["t_dep_actual"], abs=0.5)
 
     metrics = {m.label: m.value for m in at.metric}
     assert "Miss distance" in metrics

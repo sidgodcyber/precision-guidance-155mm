@@ -361,13 +361,16 @@ def render() -> None:
                       f"deflection miss {m['miss_defl_m']:+.1f} m")
             st.caption(f"time of flight {m['tof_s']:.1f} s · "
                       f"deployment at {m['t_dep_actual']:.2f} s")
-            if not m.get("state_trajectory_available", True):
+            if m.get("state_trajectory_available"):
+                n_samples = len(m["state_trajectory"]["t"]) if m.get("state_trajectory") else 0
                 st.caption(
-                    "Full 6-DOF state history (ground track, altitude, Mach) "
-                    "is not available from this entry point -- see "
-                    "setter/fire_worker.py. Flight Deck will use the "
-                    "guidance law's own predicted-impact log (`g_log`) "
-                    "instead, stored alongside this result.")
+                    f"Full 6-DOF state trajectory stored ({n_samples} samples, "
+                    f"guided phase only -- deployment to impact). Flight Deck "
+                    f"will replay it.")
+            else:
+                st.caption(
+                    "Full 6-DOF state history is not available for this "
+                    "result -- see setter/fire_worker.py.")
         with col_fig:
             fig = fire_result_figure(m["miss_range_m"], m["miss_defl_m"], cep_ref,
                                      axis_limit_m, m["engagement"], m["met_age_bucket"])

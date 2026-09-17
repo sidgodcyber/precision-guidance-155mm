@@ -51,22 +51,25 @@ the fired round's mode stays "full" regardless of the Mission Control
 fuze-mode selection; that selection is carried through to the result JSON
 as metadata only, for display, not passed into the engine.
 
-WHAT IS NOT AVAILABLE: A FULL 6-DOF STATE TRAJECTORY. `run_guided_nav`
-builds an `IntegrationResult` with a full `Trajectory` (position, velocity,
-quaternion, Mach, ... at every logged step) internally, but returns only a
-processed summary dict -- the trajectory itself is never part of its
-public return value, with or without any of its `keep_*_log` flags. Traced
-and confirmed by reading the function (analysis/nav_common.py), not
-assumed. `keep_guidance_log=True` is the closest available substitute: the
-guidance law's own per-cycle predicted-impact-point history (`g_log`:
-t, t_go, pred_range, pred_defl, miss_m, phi_deg, holding, armed), which
-this worker does request and store -- genuine, authoritative time-series
-data from the real round, just not a ground-track/altitude/Mach replay.
-Getting that would need a `keep_trajectory`-style addition to
-`run_guided_nav` itself (frozen code) -- flagged here rather than
-attempted via a duplicate, drift-prone reimplementation of its ~150-line
-orchestration in `setter/`. See the result JSON's own
-`state_trajectory_available: false` field and Flight Deck's build step.
+THE FULL 6-DOF STATE TRAJECTORY -- RESOLVED, WITH AN APPROVED FROZEN-CODE
+CHANGE. `run_guided_nav` originally returned only a processed summary
+dict; the `Trajectory` its own integration produces (position, velocity,
+quaternion, Mach, ... at every logged step) was computed but discarded.
+Traced and confirmed by reading the function, not assumed -- and reported
+before any code was written, per the working rules for `analysis/`. The
+resolution, approved explicitly rather than decided unilaterally: a fifth
+`keep_state_trajectory` flag was added to `run_guided_nav`, in exactly the
+shape of the four `keep_*_log` flags already there (serialises an
+already-computed structure; changes nothing when absent). Verified
+bit-for-bit identical output with the flag absent, both before and after
+the change, on a fully deterministic case (fixed seeds throughout, no
+`hash()`-derived seeding -- see the identity check this verification used).
+This worker sets it, so `state_trajectory` below is the GUIDED-PHASE
+trajectory (deployment to impact) of the actual fired round -- not a
+reduced-order stand-in. It does not cover the pre-deployment leg (launch
+to deployment), which `run_guided_nav` still logs too coarsely to extract;
+Flight Deck's ground track therefore starts at deployment, not at the
+muzzle, and should say so.
 """
 
 from __future__ import annotations
@@ -128,6 +131,7 @@ def fire_one_round(engagement: str, met_age_bucket: str,
         "seed": seed,
         "draw": 0,
         "keep_guidance_log": True,
+        "keep_state_trajectory": True,
     }
 
     out = nc.run_guided_nav(case)
@@ -155,12 +159,12 @@ def fire_one_round(engagement: str, met_age_bucket: str,
         "daz": out["daz"],
         "dmv": out["dmv"],
         "g_log": out.get("g_log"),
-        "state_trajectory_available": False,
+        "state_trajectory_available": True,
+        "state_trajectory": out["state_trajectory"],
         "state_trajectory_note": (
-            "analysis.nav_common.run_guided_nav does not return the full "
-            "6-DOF state trajectory (position/velocity/Mach over time) -- "
-            "only g_log, the guidance law's own predicted-impact-point "
-            "history. See this module's docstring."),
+            "Guided-phase only (deployment to impact) -- the pre-deployment "
+            "leg (launch to deployment) is not covered; see this module's "
+            "docstring."),
     }
 
 
