@@ -529,6 +529,9 @@ def render() -> None:
         else:
             st.info(selected_c.reason)
 
+        st.page_link("pages/error_budget.py",
+                    label="Open Error Budget -- ranked contributions and the paired staleness result")
+
     st.divider()
 
     # =======================================================================

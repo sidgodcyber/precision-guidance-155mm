@@ -144,15 +144,25 @@ def test_tiles_link_to_mission_control_and_archive():
 
 
 def test_unbuilt_l3_screens_are_noted_not_linked():
-    """Flight Deck / Error Budget / Physics Lab / The Engine don't exist
-    yet -- Overview must say so rather than link to nothing or guess at a
-    page that isn't built."""
+    """Physics Lab / The Engine don't exist yet -- Overview must say so
+    rather than link to nothing or guess at a page that isn't built.
+    Error Budget is now built (Step 6) and IS linked -- see
+    test_error_budget_tile_links_to_error_budget below. Flight Deck is
+    conditionally linked only after a fire (test_setter_flight_deck.py),
+    so it's correctly absent from a fresh, un-fired session too."""
     at = _fresh_overview()
     captions = " ".join(c.value for c in at.caption)
     assert "not built yet" in captions
     link_labels = [link.value for link in at.get("page_link")]
-    assert not any("Error Budget" in l or "The Engine" in l or "Flight Deck" in l
-                   or "Physics Lab" in l for l in link_labels)
+    assert not any("The Engine" in l or "Physics Lab" in l for l in link_labels)
+
+
+def test_error_budget_tile_links_to_error_budget():
+    at = _fresh_overview()
+    labels = [link.value for link in at.get("page_link")]
+    pages = [link.proto.page for link in at.get("page_link")]
+    assert any("Error Budget" in l for l in labels)
+    assert "error-budget" in pages
 
 
 # ===========================================================================

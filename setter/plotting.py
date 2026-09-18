@@ -25,7 +25,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 from fuze.trajectory_adapter import TrajectorySample
-from setter.campaign import KnowledgeTermPoint
+from setter.campaign import BudgetTerm, KnowledgeTermPoint
 from setter.palette import ACCENT as _ACCENT
 from setter.palette import BG as _BG
 from setter.palette import GRID as _GRID
@@ -33,7 +33,7 @@ from setter.palette import INK as _INK
 from setter.palette import TEXT as _TEXT
 
 __all__ = ["ground_track_figure", "knowledge_term_figure", "cep_circle_figure",
-           "fire_result_figure", "flight_deck_figure"]
+           "fire_result_figure", "flight_deck_figure", "error_budget_figure"]
 
 #: ISA-101 colour discipline (see CLAUDE.md / Control Room spec Part A2),
 #: from `setter.palette` -- the app's one colour vocabulary, shared with
@@ -67,23 +67,40 @@ def ground_track_figure(sample: TrajectorySample, label: str) -> plt.Figure:
 
 def knowledge_term_figure(points: List[KnowledgeTermPoint],
                            highlight_age: str = None) -> plt.Figure:
-    fig, ax = plt.subplots(figsize=(6, 4))
+    """The Task C staleness curve: CEP vs met-message age across all seven
+    buckets, with each available point's stored bootstrap interval drawn
+    as an error bar (`KnowledgeTermPoint.cep_lo_m`/`cep_hi_m` -- see
+    `setter.campaign.task_c_point`). Shared by Mission Control's own
+    campaign-accuracy section and the Error Budget page (Part C L3): one
+    figure, one set of honesty rules, not two that could drift apart.
+    """
+    fig, ax = plt.subplots(figsize=(6.5, 4.2))
+    fig.patch.set_alpha(0.0)
+    ax.set_facecolor(_BG)
+
     ages = [p.age for p in points]
     ceps = [p.cep_m if p.available else float("nan") for p in points]
-    colors = ["#c53030" if p.age == highlight_age else "#2b6cb0" for p in points]
+    los = [p.cep_m - p.cep_lo_m if (p.available and p.cep_lo_m is not None) else 0.0 for p in points]
+    his = [p.cep_hi_m - p.cep_m if (p.available and p.cep_hi_m is not None) else 0.0 for p in points]
+    colors = [_ACCENT if p.age == highlight_age else _INK for p in points]
 
-    ax.plot(ages, ceps, color="#2b6cb0", linewidth=1, zorder=1)
-    ax.scatter(ages, ceps, c=colors, zorder=2)
+    ax.plot(ages, ceps, color=_INK, linewidth=1, zorder=1)
+    ax.errorbar(ages, ceps, yerr=[los, his], fmt="none", ecolor=_INK,
+               elinewidth=1, capsize=3, alpha=0.7, zorder=2)
+    ax.scatter(ages, ceps, c=colors, zorder=3)
     for p, cep in zip(points, ceps):
         if not p.available:
             continue
         ax.annotate(f"{cep:.1f} m", (p.age, cep), textcoords="offset points",
-                    xytext=(0, 6), ha="center", fontsize=8)
+                    xytext=(0, 9), ha="center", fontsize=8, color=_TEXT)
 
-    ax.set_xlabel("met message age")
-    ax.set_ylabel("CEP, m (truth-fed, navigation excluded)")
-    ax.set_title("atmospheric knowledge term -- Task C")
-    ax.grid(alpha=0.3)
+    ax.set_xlabel("met message age", color=_INK)
+    ax.set_ylabel("CEP, m (truth-fed, navigation excluded)", color=_INK)
+    ax.set_title("atmospheric knowledge term -- Task C", color=_TEXT)
+    ax.tick_params(colors=_INK)
+    for spine in ax.spines.values():
+        spine.set_color(_GRID)
+    ax.grid(alpha=0.3, color=_GRID)
     fig.tight_layout()
     return fig
 
@@ -256,5 +273,52 @@ def flight_deck_figure(downrange_m, crossrange_m, altitude_m, idx: int,
         text.set_color(_TEXT)
 
     fig.suptitle(f"{engagement} -- Flight Deck replay", color=_TEXT, fontsize=10)
+    fig.tight_layout()
+    return fig
+
+
+def error_budget_figure(terms: List[BudgetTerm]) -> plt.Figure:
+    """The Error Budget's ranked-contributions chart: horizontal bars,
+    sorted descending (the caller does the sorting -- see
+    `setter.campaign.error_budget`), dominant term obvious at a glance.
+
+    The single largest bar is the one accent-coloured element, per Part
+    A2 ("one accent colour for the single most important number on
+    screen"); everything else neutral. A navigation-style bar (one with a
+    stored interval) gets an error bar; the others don't, because the
+    underlying data doesn't have one -- no interval is invented to make
+    the chart look uniform.
+    """
+    fig, ax = plt.subplots(figsize=(8.5, 0.6 * len(terms) + 1.2))
+    fig.patch.set_alpha(0.0)
+    ax.set_facecolor(_BG)
+
+    names = [t.name for t in terms]
+    values = [t.sigma_range_m for t in terms]
+    y = list(range(len(terms)))[::-1]
+    colors = [_ACCENT if i == 0 else _INK for i in range(len(terms))]
+
+    ax.barh(y, values, color=colors, height=0.55, zorder=2)
+    for yi, t in zip(y, terms):
+        label_x = t.sigma_range_m
+        if t.interval_range_m and None not in t.interval_range_m:
+            lo, hi = t.interval_range_m
+            ax.errorbar([t.sigma_range_m], [yi], xerr=[[t.sigma_range_m - lo], [hi - t.sigma_range_m]],
+                       fmt="none", ecolor=_TEXT, elinewidth=1.2, capsize=4, zorder=3)
+            label_x = hi
+        ax.annotate(f"{t.sigma_range_m:.1f} m  (n={t.n})", (label_x, yi),
+                   textcoords="offset points", xytext=(10, 0), va="center",
+                   fontsize=8, color=_TEXT)
+
+    ax.set_yticks(y)
+    ax.set_yticklabels(names, color=_TEXT)
+    ax.set_xlabel("range 1σ, m", color=_INK)
+    ax.set_title("error budget -- ranked contributions to range dispersion",
+                color=_TEXT, fontsize=10)
+    ax.tick_params(colors=_INK)
+    for spine in ax.spines.values():
+        spine.set_color(_GRID)
+    ax.grid(alpha=0.3, color=_GRID, axis="x")
+    ax.set_xlim(0, max(values) * 1.45)
     fig.tight_layout()
     return fig

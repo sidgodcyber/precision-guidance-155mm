@@ -61,6 +61,7 @@ from setter.palette import ACCENT, AMBER
 _MISSION_CONTROL_PATH = "pages/mission_control.py"
 _ARCHIVE_PATH = "pages/archive.py"
 _FLIGHT_DECK_PATH = "pages/flight_deck.py"
+_ERROR_BUDGET_PATH = "pages/error_budget.py"
 
 
 def _amber(text: str) -> str:
@@ -229,7 +230,7 @@ def render() -> None:
                 st.markdown(_amber("no campaign point for current mission"), unsafe_allow_html=True)
             if not any_flag:
                 st.caption("nothing flagged for the current mission")
-            st.caption("Error Budget — not built yet (Step 6)")
+            st.page_link(_ERROR_BUDGET_PATH, label="Open Error Budget")
 
 
 render()

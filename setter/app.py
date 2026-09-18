@@ -4,10 +4,10 @@ Simulation setter / mission-planning dashboard -- navigation shell.
 Run with:  streamlit run setter/app.py
 
 This is a software-only mission-planning UI over the existing simulation
-engine. See `setter/pages/overview.py`, `setter/pages/mission_control.py`
-and `setter/pages/archive.py` for the screens themselves;
-`setter/campaign.py` and `setter/simulation_adapter.py` for the boundary
-against the frozen simulation engine.
+engine. See `setter/pages/overview.py`, `setter/pages/mission_control.py`,
+`setter/pages/error_budget.py` and `setter/pages/archive.py` for the
+screens themselves; `setter/campaign.py` and `setter/simulation_adapter.py`
+for the boundary against the frozen simulation engine.
 
 Screen layout follows the Control Room spec's ISA-101 display hierarchy
 (see CLAUDE.md): Overview is L1, Mission Control is L2, Archive is (the
@@ -60,6 +60,7 @@ st.set_page_config(page_title="Simulation Setter", layout="wide")
 _pages = [
     st.Page("pages/overview.py", title="Overview", url_path="overview", default=True),
     st.Page("pages/mission_control.py", title="Mission Control", url_path="mission-control"),
+    st.Page("pages/error_budget.py", title="Error Budget", url_path="error-budget"),
     st.Page("pages/archive.py", title="Archive", url_path="archive"),
 ]
 if "fired_round" in st.session_state:
