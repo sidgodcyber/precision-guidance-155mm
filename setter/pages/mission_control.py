@@ -328,18 +328,29 @@ def render() -> None:
              "--engagement", mission["engagement"], "--met-age", mission["met_age_bucket"],
              "--range-offset", str(mission["range_offset_m"]),
              "--defl-offset", str(mission["defl_offset_m"]),
-             "--fuze-mode", mission["fuze_mode"], "--seed", str(seed), "--out", str(out_path)],
+             "--fuze-mode", mission["fuze_mode"],
+             "--fuze-event-time-s", str(mission["fuze_event_time_s"]),
+             "--fuze-motion-threshold", str(mission["fuze_motion_threshold"]),
+             "--fuze-proximity-trigger-m", str(mission["fuze_proximity_trigger_m"]),
+             "--seed", str(seed), "--out", str(out_path)],
             cwd=str(REPO_ROOT), stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
         return {"proc": proc, "out_path": out_path, "start": time.time(),
                 "mission": mission, "seed": seed}
 
     def _current_mission_for_fire() -> dict:
+        # The three fuze-event parameters travel with the fired round (not
+        # just the mode) so Flight Deck can replay the SAME fuze
+        # configuration that was live at fire time, even if the operator
+        # changes Mission Control's sliders afterward.
         return {
             "engagement": st.session_state.get("engagement", engagement),
             "met_age_bucket": st.session_state.get("met_age_bucket", "2h"),
             "range_offset_m": st.session_state.get("mc_target_range_offset", 0.0),
             "defl_offset_m": st.session_state.get("mc_target_defl_offset", 0.0),
             "fuze_mode": st.session_state.get("mc_fuze_mode", "time"),
+            "fuze_event_time_s": st.session_state.get("mc_function_time", 30.0),
+            "fuze_motion_threshold": st.session_state.get("mc_impact_sensitivity", 50.0),
+            "fuze_proximity_trigger_m": st.session_state.get("mc_burst_height", 5.0),
         }
 
     def _render_fired_result(result: dict) -> None:
@@ -365,8 +376,8 @@ def render() -> None:
                 n_samples = len(m["state_trajectory"]["t"]) if m.get("state_trajectory") else 0
                 st.caption(
                     f"Full 6-DOF state trajectory stored ({n_samples} samples, "
-                    f"guided phase only -- deployment to impact). Flight Deck "
-                    f"will replay it.")
+                    f"guided phase only -- deployment to impact).")
+                st.page_link("pages/flight_deck.py", label="Open Flight Deck")
             else:
                 st.caption(
                     "Full 6-DOF state history is not available for this "
@@ -443,8 +454,18 @@ def render() -> None:
         st.session_state.pop("fire_job", None)
         if result.get("ok"):
             st.session_state["fired_round"] = result
-            st.success(f"FIRE complete in {result['elapsed_s']:.1f} s.")
-            _render_fired_result(result)
+            # A PLAIN (unscoped) rerun here, deliberately -- not the
+            # scope="fragment" rerun this function otherwise avoids
+            # entirely (see the note above). Flight Deck is only added to
+            # `st.navigation`'s page list (setter/app.py) on a FULL rerun
+            # of the top-level script; this fragment-scoped completion
+            # pass is not one, so `st.page_link("pages/flight_deck.py")`
+            # below would raise StreamlitPageNotFoundError if called right
+            # here. One full rerun, exactly once per completed FIRE, is a
+            # small, deliberate exception to "no explicit rerun in this
+            # function" -- the alternative (never registering Flight Deck
+            # until some UNRELATED full rerun happens to occur) is worse.
+            st.rerun()
         else:
             st.error(f"FIRE failed: {result.get('error')}")
 

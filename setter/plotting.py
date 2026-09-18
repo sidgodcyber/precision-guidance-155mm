@@ -32,7 +32,8 @@ from setter.palette import GRID as _GRID
 from setter.palette import INK as _INK
 from setter.palette import TEXT as _TEXT
 
-__all__ = ["ground_track_figure", "knowledge_term_figure", "cep_circle_figure", "fire_result_figure"]
+__all__ = ["ground_track_figure", "knowledge_term_figure", "cep_circle_figure",
+           "fire_result_figure", "flight_deck_figure"]
 
 #: ISA-101 colour discipline (see CLAUDE.md / Control Room spec Part A2),
 #: from `setter.palette` -- the app's one colour vocabulary, shared with
@@ -178,5 +179,82 @@ def fire_result_figure(miss_range_m: float, miss_defl_m: float, cep_m_for_refere
                        fontsize=7, facecolor=_BG, edgecolor=_GRID, frameon=True)
     for text in legend.get_texts():
         text.set_color(_TEXT)
+    fig.tight_layout()
+    return fig
+
+
+def flight_deck_figure(downrange_m, crossrange_m, altitude_m, idx: int,
+                       target_range_m: float, target_defl_m: float,
+                       pred_trail_range_m, pred_trail_defl_m,
+                       axis_limits: dict, engagement: str) -> plt.Figure:
+    """Flight Deck's two-panel replay view: ground track (downrange vs
+    crossrange) and altitude profile, current position marked on both,
+    the guidance law's predicted-impact trail and current prediction drawn
+    on the ground track with a miss vector to the target.
+
+    `axis_limits` is a dict of FIXED bounds -- `{"downrange": (lo, hi),
+    "crossrange": (lo, hi), "altitude": (lo, hi)}` -- computed ONCE from
+    the whole flown trajectory (and the whole prediction trail) by the
+    caller, not refit per frame: the spec requires the view not rescale as
+    the scrubber moves, and a circle/line that rescales with the data looks
+    like it's growing or shrinking even when nothing has changed.
+
+    The predicted-impact point is the ONE accent-coloured element (Part A2:
+    "watching it converge on the target... is the whole demo" -- the single
+    most important thing on this screen); current position is a neutral
+    marker, since it is simply where the round is, not new information.
+    """
+    fig, (ax_track, ax_alt) = plt.subplots(1, 2, figsize=(10, 4.5))
+    for ax in (ax_track, ax_alt):
+        ax.set_facecolor(_BG)
+    fig.patch.set_alpha(0.0)
+
+    dr_km = [d / 1000.0 for d in downrange_m]
+
+    # -- ground track --------------------------------------------------
+    ax_track.plot(dr_km, crossrange_m, color=_INK, linewidth=1.2, zorder=2,
+                 label="flown (guided phase)")
+    ax_track.scatter([target_range_m / 1000.0], [target_defl_m], marker="+",
+                     s=160, c=_TEXT, linewidths=2, zorder=4, label="target")
+    if pred_trail_range_m:
+        trail_km = [r / 1000.0 for r in pred_trail_range_m]
+        ax_track.plot(trail_km, pred_trail_defl_m, color=_ACCENT, linewidth=0.9,
+                     linestyle=":", alpha=0.6, zorder=3)
+        ax_track.plot([pred_trail_range_m[-1] / 1000.0, target_range_m / 1000.0],
+                     [pred_trail_defl_m[-1], target_defl_m], color=_ACCENT,
+                     linewidth=1.0, linestyle="--", zorder=3)
+        ax_track.scatter([pred_trail_range_m[-1] / 1000.0], [pred_trail_defl_m[-1]],
+                         marker="D", s=70, c=_ACCENT, edgecolors=_TEXT, linewidths=0.6,
+                         zorder=5, label="guidance's current predicted impact")
+    ax_track.scatter([dr_km[idx]], [crossrange_m[idx]], marker="o", s=60, c=_TEXT,
+                     edgecolors=_BG, linewidths=0.8, zorder=6, label="current position")
+    ax_track.set_xlim(axis_limits["downrange"][0] / 1000.0, axis_limits["downrange"][1] / 1000.0)
+    ax_track.set_ylim(*axis_limits["crossrange"])
+    ax_track.set_xlabel("downrange, km", color=_INK)
+    ax_track.set_ylabel("crossrange, m", color=_INK)
+    ax_track.set_title("ground track", color=_TEXT)
+
+    # -- altitude profile ------------------------------------------------
+    ax_alt.plot(dr_km, altitude_m, color=_INK, linewidth=1.2, zorder=2)
+    ax_alt.scatter([dr_km[idx]], [altitude_m[idx]], marker="o", s=60, c=_TEXT,
+                   edgecolors=_BG, linewidths=0.8, zorder=6)
+    ax_alt.set_xlim(axis_limits["downrange"][0] / 1000.0, axis_limits["downrange"][1] / 1000.0)
+    ax_alt.set_ylim(*axis_limits["altitude"])
+    ax_alt.set_xlabel("downrange, km", color=_INK)
+    ax_alt.set_ylabel("altitude, m", color=_INK)
+    ax_alt.set_title("altitude profile", color=_TEXT)
+
+    for ax in (ax_track, ax_alt):
+        ax.tick_params(colors=_INK)
+        for spine in ax.spines.values():
+            spine.set_color(_GRID)
+        ax.grid(alpha=0.3, color=_GRID)
+
+    legend = ax_track.legend(loc="upper center", bbox_to_anchor=(0.5, -0.16), ncol=2,
+                             fontsize=7, facecolor=_BG, edgecolor=_GRID, frameon=True)
+    for text in legend.get_texts():
+        text.set_color(_TEXT)
+
+    fig.suptitle(f"{engagement} -- Flight Deck replay", color=_TEXT, fontsize=10)
     fig.tight_layout()
     return fig

@@ -60,6 +60,7 @@ from setter.palette import ACCENT, AMBER
 
 _MISSION_CONTROL_PATH = "pages/mission_control.py"
 _ARCHIVE_PATH = "pages/archive.py"
+_FLIGHT_DECK_PATH = "pages/flight_deck.py"
 
 
 def _amber(text: str) -> str:
@@ -166,6 +167,10 @@ def render() -> None:
             if not mission["from_session"]:
                 st.caption("_default -- Mission Control not yet visited this session_")
             st.page_link(_MISSION_CONTROL_PATH, label="Open Mission Control")
+            if "fired_round" in st.session_state:
+                st.page_link(_FLIGHT_DECK_PATH, label="Open Flight Deck (last fired round)")
+            else:
+                st.caption("Flight Deck — fire a round from Mission Control first")
 
     # -----------------------------------------------------------------
     # 2. Predicted accuracy -- the one accent-coloured number on the page

@@ -23,6 +23,13 @@ see the note atop `setter/pages/mission_control.py`), and a page file runs
 unconditionally top to bottom when Streamlit execs it as the active page,
 the same way this shell always runs `pg.run()` unconditionally. Nothing
 here needs to `import setter.pages.*` at all.
+
+Flight Deck (L3, Step 6) is added to `st.navigation`'s page list ONLY when
+`st.session_state["fired_round"]` already exists: "an empty Flight Deck is
+not useful" (Control Room spec). This file reruns on every interaction
+(Streamlit always re-executes the main script), so the check is live --
+firing a round on Mission Control makes Flight Deck appear in the sidebar
+on the very next rerun, without a page reload.
 """
 
 
@@ -50,9 +57,13 @@ import streamlit as st
 
 st.set_page_config(page_title="Simulation Setter", layout="wide")
 
-pg = st.navigation([
+_pages = [
     st.Page("pages/overview.py", title="Overview", url_path="overview", default=True),
     st.Page("pages/mission_control.py", title="Mission Control", url_path="mission-control"),
     st.Page("pages/archive.py", title="Archive", url_path="archive"),
-])
+]
+if "fired_round" in st.session_state:
+    _pages.append(st.Page("pages/flight_deck.py", title="Flight Deck", url_path="flight-deck"))
+
+pg = st.navigation(_pages)
 pg.run()

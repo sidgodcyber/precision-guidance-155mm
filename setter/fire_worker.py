@@ -95,7 +95,9 @@ from setter import simulation_adapter as sa
 
 def fire_one_round(engagement: str, met_age_bucket: str,
                     range_offset_m: float, defl_offset_m: float,
-                    fuze_mode: str, seed: int) -> dict:
+                    fuze_mode: str, fuze_event_time_s: float,
+                    fuze_motion_threshold: float, fuze_proximity_trigger_m: float,
+                    seed: int) -> dict:
     t0 = time.perf_counter()
 
     base = sa.baseline_for(engagement)
@@ -145,6 +147,9 @@ def fire_one_round(engagement: str, met_age_bucket: str,
         "range_offset_m": range_offset_m,
         "defl_offset_m": defl_offset_m,
         "fuze_mode_context_only": fuze_mode,
+        "fuze_event_time_s": fuze_event_time_s,
+        "fuze_motion_threshold": fuze_motion_threshold,
+        "fuze_proximity_trigger_m": fuze_proximity_trigger_m,
         "seed": seed,
         "miss_range_m": out["miss_range_m"],
         "miss_defl_m": out["miss_defl_m"],
@@ -159,6 +164,9 @@ def fire_one_round(engagement: str, met_age_bucket: str,
         "daz": out["daz"],
         "dmv": out["dmv"],
         "g_log": out.get("g_log"),
+        "g_saturated_fraction": out.get("g_saturated_fraction"),
+        "g_authority_ok": out.get("g_authority_ok"),
+        "g_ever_saturated": out.get("g_ever_saturated"),
         "state_trajectory_available": True,
         "state_trajectory": out["state_trajectory"],
         "state_trajectory_note": (
@@ -175,6 +183,9 @@ def main() -> None:
     ap.add_argument("--range-offset", type=float, default=0.0)
     ap.add_argument("--defl-offset", type=float, default=0.0)
     ap.add_argument("--fuze-mode", default="time")
+    ap.add_argument("--fuze-event-time-s", type=float, default=30.0)
+    ap.add_argument("--fuze-motion-threshold", type=float, default=50.0)
+    ap.add_argument("--fuze-proximity-trigger-m", type=float, default=5.0)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", required=True)
     args = ap.parse_args()
@@ -182,7 +193,8 @@ def main() -> None:
     try:
         result = fire_one_round(
             args.engagement, args.met_age, args.range_offset,
-            args.defl_offset, args.fuze_mode, args.seed)
+            args.defl_offset, args.fuze_mode, args.fuze_event_time_s,
+            args.fuze_motion_threshold, args.fuze_proximity_trigger_m, args.seed)
     except Exception as exc:
         result = {"ok": False, "error": str(exc), "traceback": traceback.format_exc()}
 
