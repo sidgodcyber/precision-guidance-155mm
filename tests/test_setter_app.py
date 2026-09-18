@@ -29,7 +29,18 @@ REPO_ROOT = APP_PATH.parent.parent
 
 
 def _fresh_app() -> AppTest:
+    """A fresh session, navigated to Mission Control.
+
+    Step 5 made Overview (L1) the default landing page (see setter/app.py),
+    so a plain `.run()` no longer lands here -- every test below is
+    specifically about Mission Control (L2), so this helper does the one
+    navigation step for all of them rather than repeating it 30 times.
+    Overview itself is covered separately in test_setter_overview.py.
+    """
     at = AppTest.from_file(str(APP_PATH))
+    at.run(timeout=60)
+    assert not at.exception, at.exception
+    at.switch_page("pages/mission_control.py")
     at.run(timeout=60)
     assert not at.exception, at.exception
     return at
@@ -138,8 +149,11 @@ def test_met_age_ui_readout_matches_the_data_layer(age_bucket):
 # ===========================================================================
 @pytest.mark.parametrize("mode", ["time", "motion", "proximity", "combined"])
 def test_event_mode_selection(mode):
+    """The Mission Control fuze-mode selector -- labelled plainly ("Mode",
+    under a "Fuze mode" section heading), not "Event engine demonstration
+    mode"; see test_fuze_mode_parameters_use_plain_language."""
     at = _fresh_app()
-    box = [s for s in at.selectbox if s.label.startswith("Event engine")][0]
+    box = [s for s in at.selectbox if s.label == "Mode"][0]
     box.set_value(mode).run(timeout=60)
     assert not at.exception, at.exception
 
@@ -199,15 +213,49 @@ def test_numeric_widgets_reject_out_of_range_input():
     so an out-of-range value cannot be driven into them through normal
     interaction: AppTest confirms the widget simply does not accept it
     (value is left unchanged) rather than the app crashing or silently
-    building an invalid message from it."""
+    building an invalid message from it. "Impact sensitivity" is the plain-
+    language label for motion_event.threshold -- see
+    test_fuze_mode_parameters_use_plain_language."""
     at = _fresh_app()
-    threshold = [n for n in at.number_input if n.label == "motion_event.threshold"][0]
+    threshold = [n for n in at.number_input if n.label == "Impact sensitivity"][0]
     original = threshold.value
     threshold.set_value(-5.0).run(timeout=60)
     assert not at.exception, at.exception
-    still = [n for n in at.number_input if n.label == "motion_event.threshold"][0]
+    still = [n for n in at.number_input if n.label == "Impact sensitivity"][0]
     assert still.value == original
     assert [s.value for s in at.success] == ["Configuration message is valid."]
+
+
+# ===========================================================================
+# Mission Control (Control Room spec, L2) -- plain-language parameter names
+# ===========================================================================
+def test_fuze_mode_parameters_use_plain_language():
+    """Part C's L2 spec is explicit: fuze parameters must be named in plain
+    words -- "Function time, Burst height, Impact sensitivity" -- and never
+    with an internal identifier like `time_event.event_time_s`."""
+    at = _fresh_app()
+    labels = {n.label for n in at.number_input}
+    assert {"Function time, s", "Burst height, m", "Impact sensitivity"} <= labels
+    assert not any("_event." in label or label.startswith(("time_event", "motion_event", "proximity_event"))
+                   for label in labels)
+
+
+def test_mission_control_has_exactly_one_met_age_slider():
+    """Step 2 introduced a second, fragment-local met-age slider alongside
+    the pre-existing top-level one; Step 3 consolidates them into the one
+    slider inside `mission_control_fragment`, which now also drives the
+    fire-control solution and setter message (see the module docstring's
+    note on why they can't be split across fragments without going stale)."""
+    at = _fresh_app()
+    sliders = list(at.select_slider)
+    assert len(sliders) == 1
+    assert sliders[0].label == "Meteorological message age"
+
+
+def test_fire_control_solution_present():
+    at = _fresh_app()
+    labels = {m.label for m in at.metric}
+    assert {"Quadrant elevation", "Azimuth correction", "Deployment time"} <= labels
 
 
 # ===========================================================================

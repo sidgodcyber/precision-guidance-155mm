@@ -565,4 +565,31 @@ def run_guided_nav(args) -> dict:
                                        np.sqrt((ve ** 2).mean(axis=0))]
                 out["n_roll_bias_deg"] = float(np.degrees(re.mean()))
                 out["n_roll_sd_deg"] = float(np.degrees(re.std()))
+    if args.get("keep_state_trajectory"):
+        # The GUIDED-PHASE trajectory only (deployment to impact) --
+        # `res.trajectory` is already computed above by the integration
+        # this function runs regardless of this flag; this block only
+        # serialises it, the same shape of addition as keep_guidance_log/
+        # keep_error_log above. The PRE-deployment leg (launch to
+        # deployment) is logged too coarsely to extract
+        # (`log_every=10**9` on the `pre` integration above) and this flag
+        # does not change that -- exposing an already-computed structure,
+        # not altering what gets computed, is the point.
+        tr = res.trajectory
+        out["state_trajectory"] = {
+            "t": tr.t.tolist(),
+            "position": tr.position.tolist(),
+            "velocity": tr.velocity.tolist(),
+            "quaternion": tr.quaternion.tolist(),
+            "omega": tr.omega.tolist(),
+            "mach": tr.mach.tolist(),
+            "airspeed": tr.airspeed.tolist(),
+            "total_aoa": tr.total_aoa.tolist(),
+            "alpha": tr.alpha.tolist(),
+            "beta": tr.beta.tolist(),
+            "density": tr.density.tolist(),
+            "dynamic_pressure": tr.dynamic_pressure.tolist(),
+            "nose_angle": tr.nose_angle.tolist() if tr.nose_angle is not None else None,
+            "nose_rate": tr.nose_rate.tolist() if tr.nose_rate is not None else None,
+        }
     return out

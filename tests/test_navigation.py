@@ -448,6 +448,42 @@ def test_truth_fed_run_reproduces_step_3_exactly():
     assert abs(a["miss_m"] - b["miss_m"]) < 1e-9
 
 
+def test_keep_state_trajectory_is_a_pure_addition():
+    """
+    The Control Room dashboard's FIRE button needed the guided-phase state
+    trajectory `run_guided_nav` computes (`res.trajectory`, inside the
+    function) but never returned. `keep_state_trajectory` -- a fifth flag
+    in the same shape as the four `keep_*_log` flags already here -- exposes
+    it, and only it: every existing caller (every published campaign in
+    this project) does not pass the flag, so the result for them must be
+    identical, not merely close, to what it was before the flag existed.
+
+    Slow (two 6-DOF trajectories) and worth it: this is a change to the
+    function every published CEP number in this project depends on.
+    """
+    from analysis import guidance_cep as gc, nav_cep as ncep, nav_common as ncm
+    md = gc.load_maps()
+    ctx = gc.engagement_context(md, "long")
+    opts = gc.scheduler_options(md, "long")["proportional"]
+    draws = gc.make_draws(ctx, 4)
+    case = ncep._cases(ctx, draws, use_nav=True, scheduler_opts=opts)[0]
+
+    without = ncm.run_guided_nav(case)
+    assert "state_trajectory" not in without
+
+    with_flag = ncm.run_guided_nav({**case, "keep_state_trajectory": True})
+    assert "state_trajectory" in with_flag
+    tr = with_flag["state_trajectory"]
+    assert len(tr["t"]) > 0
+    assert len(tr["position"]) == len(tr["t"]) == len(tr["mach"])
+    # guided phase only: starts at deployment, not at the muzzle
+    assert tr["t"][0] == pytest.approx(with_flag["t_dep_actual"], abs=1e-6)
+
+    for key in without:
+        assert with_flag[key] == without[key], \
+            f"{key!r} differs with keep_state_trajectory set -- it must be a pure addition"
+
+
 def test_attitude_updates_do_not_reset_the_position_coast_timer():
     """
     The defect docs/NAV-DEGRADATION.md section 3 found, pinned so it cannot
