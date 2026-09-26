@@ -16,6 +16,10 @@ DOCS_DIR = REPO_ROOT / "docs"
 
 GUIDANCE_MAP_PATH = DOCS_DIR / "guidance_map.json"
 MONTE_CARLO_PATH = DOCS_DIR / "monte_carlo.json"
+VALIDATION_RESULTS_PATH = DOCS_DIR / "validation_results.json"
+MPMM_RESULTS_PATH = DOCS_DIR / "mpmm_results.json"
+ROLL_SERVO_PATH = DOCS_DIR / "roll_servo.json"
+AUTHORITY_RESULTS_PATH = DOCS_DIR / "authority_results.json"
 
 #: The five supported named engagements. The campaign/guidance data in
 #: docs/guidance_map.json and docs/monte_carlo.json is tied to exactly these;

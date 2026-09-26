@@ -29,7 +29,8 @@ __all__ = [
     "CampaignPoint", "KnowledgeTermPoint", "BudgetTerm",
     "task_a_point", "task_a_by_age", "task_a_headline_table",
     "task_a_scatter", "task_a_max_miss_m",
-    "task_c_point", "task_c_curve", "error_budget",
+    "task_c_point", "task_c_curve", "task_c_scatter", "task_c_max_miss_m",
+    "error_budget",
 ]
 
 #: Task A does not vary met age continuously -- it has exactly two stored
@@ -194,6 +195,39 @@ def task_c_curve(tag: str = "headline", engagement: str = "long") -> list:
     met-age visualization. Ages the tag/engagement doesn't carry come back
     as explicit unavailable points rather than being omitted silently."""
     return [task_c_point(age, tag, engagement) for age in MET_AGE_BUCKETS]
+
+
+def task_c_scatter(age: str, tag: str = "headline", engagement: str = "long") -> list:
+    """Per-round (range-miss, deflection-miss) pairs, metres, for one Task C
+    met-age bucket -- mirrors `task_a_scatter` exactly, but keyed by AGE
+    rather than by engagement (Task C's stored series is effectively just
+    "long"; see `task_c_point`). `docs/monte_carlo.json`'s Task C entry
+    stores its per-round scatter as `rows[age]` -- a dict keyed by age
+    bucket, unlike Task A's flat `rows` list -- so this indexes one level
+    deeper than `task_a_scatter` does. Empty (not fabricated) for an
+    age/tag/engagement combination the campaign never flew.
+    """
+    if age not in MET_AGE_BUCKETS:
+        raise ValueError(f"unsupported Task C met age {age!r}; supported: {MET_AGE_BUCKETS}")
+    entry = _data()["c"].get(tag, {}).get(engagement)
+    if entry is None:
+        return []
+    rows = entry.get("rows", {}).get(age, [])
+    return [(row["miss_range_m"], row["miss_defl_m"]) for row in rows]
+
+
+def task_c_max_miss_m(tag: str = "headline", engagement: str = "long") -> float:
+    """The largest stored Task C round miss distance across every met-age
+    bucket for one tag/engagement -- a fixed reference radius so the
+    met-age CEP-circle view's axes don't rescale as the age slider moves
+    (mirrors `task_a_max_miss_m`'s reasoning exactly)."""
+    entry = _data()["c"].get(tag, {}).get(engagement)
+    if entry is None:
+        return 0.0
+    worst = 0.0
+    for row in entry.get("ages", {}).values():
+        worst = max(worst, row.get("max_m", 0.0))
+    return worst
 
 
 @dataclass(frozen=True)

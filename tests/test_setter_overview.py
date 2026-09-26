@@ -143,18 +143,22 @@ def test_tiles_link_to_mission_control_and_archive():
     assert "archive" in pages
 
 
-def test_unbuilt_l3_screens_are_noted_not_linked():
-    """Physics Lab / The Engine don't exist yet -- Overview must say so
-    rather than link to nothing or guess at a page that isn't built.
-    Error Budget is now built (Step 6) and IS linked -- see
-    test_error_budget_tile_links_to_error_budget below. Flight Deck is
-    conditionally linked only after a fire (test_setter_flight_deck.py),
+def test_physics_lab_and_engine_tiles_link_to_their_pages():
+    """Physics Lab / The Engine are now built (Step 8) and are linked from
+    the Engine Status tile's stale "not built yet" caption, exactly as
+    Error Budget's own placeholder was replaced when IT was built (Step 6)
+    -- see test_error_budget_tile_links_to_error_budget below. Flight Deck
+    is conditionally linked only after a fire (test_setter_flight_deck.py),
     so it's correctly absent from a fresh, un-fired session too."""
     at = _fresh_overview()
     captions = " ".join(c.value for c in at.caption)
-    assert "not built yet" in captions
-    link_labels = [link.value for link in at.get("page_link")]
-    assert not any("The Engine" in l or "Physics Lab" in l for l in link_labels)
+    assert "not built yet" not in captions
+    labels = [link.value for link in at.get("page_link")]
+    pages = [link.proto.page for link in at.get("page_link")]
+    assert any("Physics Lab" in l for l in labels)
+    assert any("The Engine" in l for l in labels)
+    assert "physics-lab" in pages
+    assert "engine" in pages
 
 
 def test_error_budget_tile_links_to_error_budget():

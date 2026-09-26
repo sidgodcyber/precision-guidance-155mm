@@ -62,6 +62,8 @@ _MISSION_CONTROL_PATH = "pages/mission_control.py"
 _ARCHIVE_PATH = "pages/archive.py"
 _FLIGHT_DECK_PATH = "pages/flight_deck.py"
 _ERROR_BUDGET_PATH = "pages/error_budget.py"
+_PHYSICS_LAB_PATH = "pages/physics_lab.py"
+_ENGINE_PATH = "pages/engine.py"
 
 
 def _amber(text: str) -> str:
@@ -200,7 +202,8 @@ def render() -> None:
             campaign_date = datetime.fromtimestamp(_last_campaign_mtime()).strftime("%Y-%m-%d")
             st.caption(f"last campaign {campaign_date}")
             st.caption(f"commit `{_repo_commit_short()}`")
-            st.caption("The Engine — not built yet (Step 8)")
+            st.page_link(_PHYSICS_LAB_PATH, label="Open Physics Lab")
+            st.page_link(_ENGINE_PATH, label="Open The Engine")
 
     # -----------------------------------------------------------------
     # 4. Artifact freshness

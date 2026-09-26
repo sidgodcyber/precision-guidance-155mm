@@ -61,6 +61,8 @@ _pages = [
     st.Page("pages/overview.py", title="Overview", url_path="overview", default=True),
     st.Page("pages/mission_control.py", title="Mission Control", url_path="mission-control"),
     st.Page("pages/error_budget.py", title="Error Budget", url_path="error-budget"),
+    st.Page("pages/physics_lab.py", title="Physics Lab", url_path="physics-lab"),
+    st.Page("pages/engine.py", title="The Engine", url_path="engine"),
     st.Page("pages/archive.py", title="Archive", url_path="archive"),
 ]
 if "fired_round" in st.session_state:
